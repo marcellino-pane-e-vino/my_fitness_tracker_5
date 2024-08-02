@@ -2,21 +2,31 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+
+    <!-- Your existing UI components -->
 
     <Button
         android:id="@+id/button_add_goal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Add a Goal"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/button_add_workout"
-        />
+        android:layout_marginTop="16dp"/>
 
     <Button
         android:id="@+id/button_add_workout"
@@ -26,8 +36,7 @@
         app:layout_constraintTop_toBottomOf="@id/button_add_goal"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/button_view_progress"
-        />
+        android:layout_marginTop="16dp"/>
 
     <Button
         android:id="@+id/button_view_progress"
@@ -37,8 +46,7 @@
         app:layout_constraintTop_toBottomOf="@id/button_add_workout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/button_profile"
-        />
+        android:layout_marginTop="16dp"/>
 
     <Button
         android:id="@+id/button_profile"
@@ -48,7 +56,6 @@
         app:layout_constraintTop_toBottomOf="@id/button_view_progress"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        />
+        android:layout_marginTop="16dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

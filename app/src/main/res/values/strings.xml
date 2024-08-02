@@ -1,3 +1,10 @@
 <resources>
-    <string name="app_name">my_fitness_tracker_5</string>
+    <string name="app_name">My Fitness Tracker</string>
+    <string-array name="sports_array">
+        <item>Run</item>
+        <item>Walk</item>
+        <item>Squat</item>
+        <item>Pushup</item>
+        <item>Pullup</item>
+    </string-array>
 </resources>

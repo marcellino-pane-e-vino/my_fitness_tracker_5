@@ -21,8 +21,7 @@
         </activity>
         <activity android:name=".AddGoalActivity" />
         <activity android:name=".AddWorkoutActivity" />
-<!--        <activity android:name=".ViewProgressActivity" />-->
-<!--        <activity android:name=".ProfileActivity" />-->
+        <activity android:name=".ViewProgressActivity" />
     </application>
 
 </manifest>
