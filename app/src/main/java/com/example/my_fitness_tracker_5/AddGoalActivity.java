@@ -1,10 +1,10 @@
 package com.example.my_fitness_tracker_5;
-
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -16,13 +16,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
-import androidx.appcompat.widget.Toolbar;
 
 public class AddGoalActivity extends AppCompatActivity {
 
@@ -34,8 +33,9 @@ public class AddGoalActivity extends AppCompatActivity {
     private Button buttonSelectDate, buttonConfirmGoal;
     private TextView textViewSelectedDate;
     private ListView listViewGoals;
-    private ArrayAdapter<String> goalsAdapter;
+    private GoalAdapter goalsAdapter;
     private ArrayList<String> goalsList;
+
     private String selectedDate;
     private Context context;
 
@@ -43,11 +43,6 @@ public class AddGoalActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_goal);
-
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle("Add a Goal");
 
         context = this;
         spinnerSport = findViewById(R.id.spinner_sport);
@@ -58,8 +53,13 @@ public class AddGoalActivity extends AppCompatActivity {
         textViewSelectedDate = findViewById(R.id.textView_selected_date);
         listViewGoals = findViewById(R.id.listView_goals);
 
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle("Add a Goal");
+
         goalsList = new ArrayList<>();
-        goalsAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, goalsList);
+        goalsAdapter = new GoalAdapter(this, goalsList);
         listViewGoals.setAdapter(goalsAdapter);
 
         selectedDate = "";
@@ -102,6 +102,7 @@ public class AddGoalActivity extends AppCompatActivity {
                 goalsAdapter.notifyDataSetChanged();
 
                 saveGoals();
+                setListViewHeightBasedOnChildren(listViewGoals);
 
                 scheduleNotification(goal, selectedDate);
             }
@@ -122,11 +123,31 @@ public class AddGoalActivity extends AppCompatActivity {
         goalsList.clear();
         goalsList.addAll(goalsSet);
         goalsAdapter.notifyDataSetChanged();
+        setListViewHeightBasedOnChildren(listViewGoals);
     }
 
     private void scheduleNotification(String goal, String date) {
         // Schedule the notification for the goal's date.
         // This can be implemented using AlarmManager or WorkManager.
         Toast.makeText(context, "Goal scheduled: " + goal, Toast.LENGTH_SHORT).show();
+    }
+
+    private void setListViewHeightBasedOnChildren(ListView listView) {
+        ArrayAdapter adapter = (ArrayAdapter) listView.getAdapter();
+        if (adapter == null) {
+            return;
+        }
+
+        int totalHeight = 0;
+        for (int i = 0; i < adapter.getCount(); i++) {
+            View listItem = adapter.getView(i, null, listView);
+            listItem.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+            totalHeight += listItem.getMeasuredHeight();
+        }
+
+        ViewGroup.LayoutParams params = listView.getLayoutParams();
+        params.height = totalHeight + (listView.getDividerHeight() * (adapter.getCount() - 1));
+        listView.setLayoutParams(params);
+        listView.requestLayout();
     }
 }
