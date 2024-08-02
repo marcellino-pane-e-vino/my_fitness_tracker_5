@@ -1,11 +1,12 @@
 package com.example.my_fitness_tracker_5;
+
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -107,6 +108,15 @@ public class AddGoalActivity extends AppCompatActivity {
                 scheduleNotification(goal, selectedDate);
             }
         });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            finish(); // This will navigate back to the previous activity
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void saveGoals() {
