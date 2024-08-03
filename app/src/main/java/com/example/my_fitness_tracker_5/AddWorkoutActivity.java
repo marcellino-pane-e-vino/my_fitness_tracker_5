@@ -42,6 +42,8 @@ import androidx.core.content.FileProvider;
 import androidx.fragment.app.FragmentManager;
 
 
+import com.jjoe64.graphview.BuildConfig;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -115,9 +117,14 @@ public class AddWorkoutActivity extends AppCompatActivity {
                 File photoFile = new File(currentPhotoPath);
                 if (photoFile.exists()) {
                     Bitmap imageBitmap = BitmapFactory.decodeFile(currentPhotoPath);
-                    currentPhotoBase64 = encodeBase64(imageBitmap);
-                    imageViewPhotoPreview.setImageBitmap(imageBitmap);
-                    imageViewPhotoPreview.setVisibility(View.VISIBLE);
+                    if (imageBitmap != null) {
+                        currentPhotoBase64 = encodeBase64(imageBitmap);
+                        imageViewPhotoPreview.setImageBitmap(imageBitmap);
+                        imageViewPhotoPreview.setVisibility(View.VISIBLE);
+                    } else {
+                        Log.e(TAG, "Decoded bitmap is null");
+                        Toast.makeText(context, "Error: Decoded bitmap is null", Toast.LENGTH_SHORT).show();
+                    }
                 } else {
                     Log.e(TAG, "Photo file not found: " + currentPhotoPath);
                     Toast.makeText(context, "Error: Photo file not found", Toast.LENGTH_SHORT).show();
@@ -173,6 +180,13 @@ public class AddWorkoutActivity extends AppCompatActivity {
                 }
 
                 String workoutDescription = "Sport: " + sport + ", Distance/Reps: " + distanceReps;
+
+                // Validate the Base64 string before creating the Workout object
+                if (currentPhotoBase64 != null && !isValidBase64(currentPhotoBase64)) {
+                    Log.e("AddWorkoutActivity", "Invalid Base64 string");
+                    currentPhotoBase64 = null; // Reset the current photo if invalid
+                }
+
                 Workout workout = new Workout(workoutDescription, currentPhotoBase64, new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date()));
                 workoutsList.add(workout);
                 workoutsAdapter.notifyDataSetChanged();
@@ -197,6 +211,19 @@ public class AddWorkoutActivity extends AppCompatActivity {
         });
     }
 
+
+    private boolean isValidBase64(String str) {
+        if (str == null || str.isEmpty()) {
+            return false;
+        }
+        try {
+            Base64.decode(str, Base64.DEFAULT);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
@@ -212,27 +239,26 @@ public class AddWorkoutActivity extends AppCompatActivity {
     }
 
     private void openCamera() {
-        // Check if the device has a camera
         if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)) {
             Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-                // Create the File where the photo should go
                 File photoFile = null;
                 try {
                     photoFile = createImageFile();
                 } catch (IOException ex) {
-                    // Error occurred while creating the File
                     Log.e(TAG, "Error creating photo file: ", ex);
                     Toast.makeText(context, "Error creating photo file", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                // Continue only if the File was successfully created
                 if (photoFile != null) {
                     Uri photoURI = FileProvider.getUriForFile(this,
-                            "com.example.my_fitness_tracker_5.fileprovider",
+                            BuildConfig.APPLICATION_ID + ".fileprovider",
                             photoFile);
                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                     takePhotoLauncher.launch(takePictureIntent);
+                } else {
+                    Log.e(TAG, "Photo file is null");
+                    Toast.makeText(context, "Error creating photo file", Toast.LENGTH_SHORT).show();
                 }
             } else {
                 Toast.makeText(context, "No camera app found. Please install a camera app.", Toast.LENGTH_SHORT).show();
@@ -242,9 +268,22 @@ public class AddWorkoutActivity extends AppCompatActivity {
         }
     }
 
+    public static boolean isBase64(String str) {
+        if (str == null || str.isEmpty()) {
+            return false;
+        }
+        try {
+            Base64.decode(str, Base64.DEFAULT);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+
     private File createImageFile() throws IOException {
         // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(
@@ -257,6 +296,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
         currentPhotoPath = image.getAbsolutePath();
         return image;
     }
+
 
     private String encodeBase64(Bitmap image) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -281,7 +321,10 @@ public class AddWorkoutActivity extends AppCompatActivity {
         Set<String> workoutsSet = sharedPreferences.getStringSet(WORKOUTS_KEY, new HashSet<String>());
         workoutsList.clear();
         for (String workoutString : workoutsSet) {
-            workoutsList.add(Workout.fromString(workoutString));
+            Workout workout = Workout.fromString(workoutString);
+            if (workout != null) {
+                workoutsList.add(workout);
+            }
         }
         workoutsAdapter.notifyDataSetChanged();
         setListViewHeightBasedOnChildren(listViewWorkouts);

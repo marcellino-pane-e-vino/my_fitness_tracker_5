@@ -3,7 +3,9 @@ package com.example.my_fitness_tracker_5;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +13,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 
@@ -20,8 +23,9 @@ import java.util.Set;
 
 public class WorkoutAdapter extends ArrayAdapter<Workout> {
 
-    private Context context;
-    private ArrayList<Workout> workoutsList;
+    private static final String TAG = "WorkoutAdapter";
+    private final Context context;
+    private final ArrayList<Workout> workoutsList;
 
     public WorkoutAdapter(Context context, ArrayList<Workout> workoutsList) {
         super(context, 0, workoutsList);
@@ -29,8 +33,9 @@ public class WorkoutAdapter extends ArrayAdapter<Workout> {
         this.workoutsList = workoutsList;
     }
 
+    @NonNull
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
         if (convertView == null) {
             convertView = LayoutInflater.from(context).inflate(R.layout.workout_item, parent, false);
         }
@@ -44,35 +49,37 @@ public class WorkoutAdapter extends ArrayAdapter<Workout> {
         textViewDescription.setText(workout.getDescription());
 
         if (workout.getPhotoBase64() != null && !workout.getPhotoBase64().isEmpty()) {
-            Bitmap bitmap = decodeBase64(workout.getPhotoBase64());
-            imageViewPhoto.setImageBitmap(bitmap);
-            imageViewPhoto.setVisibility(View.VISIBLE);
+            try {
+                if (isValidBase64(workout.getPhotoBase64())) {
+                    Bitmap bitmap = decodeBase64(workout.getPhotoBase64());
+                    imageViewPhoto.setImageBitmap(bitmap);
+                    imageViewPhoto.setVisibility(View.VISIBLE);
 
-            imageViewPhoto.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    showImagePreview(workout.getPhotoBase64());
+                    imageViewPhoto.setOnClickListener(v -> showImagePreview(workout.getPhotoBase64()));
+                } else {
+                    Log.e(TAG, "Invalid Base64 string");
+                    imageViewPhoto.setVisibility(View.GONE);
                 }
-            });
+            } catch (IllegalArgumentException e) {
+                Log.e(TAG, "Base64 decoding failed", e);
+                imageViewPhoto.setVisibility(View.GONE);
+            }
         } else {
             imageViewPhoto.setVisibility(View.GONE);
         }
 
-        imageViewDelete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                workoutsList.remove(position);
-                notifyDataSetChanged();
-                saveWorkouts();
-            }
+        imageViewDelete.setOnClickListener(v -> {
+            workoutsList.remove(position);
+            notifyDataSetChanged();
+            saveWorkouts();
         });
 
         return convertView;
     }
 
     private Bitmap decodeBase64(String input) {
-        byte[] decodedByte = Base64.decode(input, 0);
-        return android.graphics.BitmapFactory.decodeByteArray(decodedByte, 0, decodedByte.length);
+        byte[] decodedByte = Base64.decode(input, Base64.DEFAULT);
+        return BitmapFactory.decodeByteArray(decodedByte, 0, decodedByte.length);
     }
 
     private void showImagePreview(String imageBase64) {
@@ -89,5 +96,18 @@ public class WorkoutAdapter extends ArrayAdapter<Workout> {
         }
         editor.putStringSet("workouts", workoutsSet);
         editor.apply();
+    }
+
+    // Utility method to validate Base64 string
+    private boolean isValidBase64(String str) {
+        if (str == null || str.isEmpty()) {
+            return false;
+        }
+        try {
+            Base64.decode(str, Base64.DEFAULT);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 }

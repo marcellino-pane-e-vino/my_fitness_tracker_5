@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.Locale;
 
 public class Workout {
+
     private String description;
     private String photoBase64;
     private String date;
@@ -17,6 +18,8 @@ public class Workout {
         this.photoBase64 = photoBase64;
         this.date = date;
     }
+
+    // Getters and setters
 
     public String getDescription() {
         return description;
@@ -32,14 +35,15 @@ public class Workout {
 
     @Override
     public String toString() {
-        return description + "," + (photoBase64 != null ? photoBase64 : "") + "," + date;
+        // Customize the format if needed
+        return description + ";;;" + photoBase64 + ";;;" + date;
     }
 
-    public static Workout fromString(String workoutString) {
-        String[] parts = workoutString.split(",", 3);
-        String description = parts[0];
-        String photoBase64 = parts.length > 1 ? parts[1] : null;
-        String date = parts.length > 2 ? parts[2] : null;
-        return new Workout(description, photoBase64, date);
+    public static Workout fromString(String str) {
+        String[] parts = str.split(";;;");
+        if (parts.length == 3) {
+            return new Workout(parts[0], parts[1], parts[2]);
+        }
+        return null;
     }
 }
