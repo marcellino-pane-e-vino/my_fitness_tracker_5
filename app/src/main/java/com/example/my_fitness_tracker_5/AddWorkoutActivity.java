@@ -15,12 +15,14 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Base64;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -41,7 +43,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class AddWorkoutActivity extends AppCompatActivity {
@@ -50,6 +51,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
     private static final String WORKOUTS_KEY = "workouts";
     private static final int REQUEST_IMAGE_CAPTURE = 1;
     private static final int REQUEST_IMAGE_PICK = 2;
+    private static final String TAG = "AddWorkoutActivity";
 
     private Spinner spinnerSport;
     private EditText editTextDistanceReps;
@@ -58,6 +60,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
     private WorkoutAdapter workoutsAdapter;
     private ArrayList<Workout> workoutsList;
     private String currentPhotoBase64;
+    private ImageView imageViewPhotoPreview;
 
     private Context context;
 
@@ -79,6 +82,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
         buttonTakePhoto = findViewById(R.id.button_take_photo);
         buttonConfirmWorkout = findViewById(R.id.button_confirm_workout);
         listViewWorkouts = findViewById(R.id.listView_workouts);
+        imageViewPhotoPreview = findViewById(R.id.imageView_photo_preview);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -105,7 +109,14 @@ public class AddWorkoutActivity extends AppCompatActivity {
                 if (photoFile.exists()) {
                     Bitmap imageBitmap = BitmapFactory.decodeFile(currentPhotoPath);
                     currentPhotoBase64 = encodeBase64(imageBitmap);
+                    imageViewPhotoPreview.setImageBitmap(imageBitmap);
+                    imageViewPhotoPreview.setVisibility(View.VISIBLE);
+                } else {
+                    Log.e(TAG, "Photo file not found: " + currentPhotoPath);
+                    Toast.makeText(context, "Error: Photo file not found", Toast.LENGTH_SHORT).show();
                 }
+            } else {
+                Log.e(TAG, "Camera activity result not OK");
             }
         });
 
@@ -115,9 +126,13 @@ public class AddWorkoutActivity extends AppCompatActivity {
                 try {
                     Bitmap imageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
                     currentPhotoBase64 = encodeBase64(imageBitmap);
+                    imageViewPhotoPreview.setImageBitmap(imageBitmap);
+                    imageViewPhotoPreview.setVisibility(View.VISIBLE);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            } else {
+                Log.e(TAG, "Gallery activity result not OK");
             }
         });
 
@@ -159,10 +174,10 @@ public class AddWorkoutActivity extends AppCompatActivity {
                 setListViewHeightBasedOnChildren(listViewWorkouts);
 
                 currentPhotoBase64 = null; // Reset the current photo after confirming
+                imageViewPhotoPreview.setVisibility(View.GONE); // Hide the photo preview
                 editTextDistanceReps.setText(""); // Clear the EditText
             }
         });
-
     }
 
     @Override
@@ -190,7 +205,9 @@ public class AddWorkoutActivity extends AppCompatActivity {
                     photoFile = createImageFile();
                 } catch (IOException ex) {
                     // Error occurred while creating the File
+                    Log.e(TAG, "Error creating photo file: ", ex);
                     Toast.makeText(context, "Error creating photo file", Toast.LENGTH_SHORT).show();
+                    return;
                 }
                 // Continue only if the File was successfully created
                 if (photoFile != null) {

@@ -11,8 +11,6 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="?attr/colorPrimary"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
@@ -70,7 +68,16 @@
                     android:id="@+id/button_confirm_workout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Confirm Workout" />
+                    android:text="Confirm Workout"
+                    android:layout_marginEnd="16dp" />
+
+                <ImageView
+                    android:id="@+id/imageView_photo_preview"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center_vertical"
+                    android:scaleType="centerCrop"
+                    android:visibility="gone" />
             </LinearLayout>
 
             <TextView
