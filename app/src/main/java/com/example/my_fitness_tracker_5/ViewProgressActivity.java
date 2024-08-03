@@ -2,6 +2,7 @@ package com.example.my_fitness_tracker_5;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -76,6 +77,71 @@ public class ViewProgressActivity extends AppCompatActivity {
                 return super.formatLabel(value, isValueX);
             }
         });
+
+        // Set the number of vertical labels to integer values
+        graphWeeklyWorkouts.getGridLabelRenderer().setNumVerticalLabels(5); // Adjust this as needed
+
+        // Display additional statistics
+        displayStatistics();
+    }
+
+    private void displayStatistics() {
+        TextView textTotalWorkouts = findViewById(R.id.text_total_workouts);
+        TextView textWeeklyWorkouts = findViewById(R.id.text_weekly_workouts);
+        TextView textMonthlyWorkouts = findViewById(R.id.text_monthly_workouts);
+        TextView textYearlyWorkouts = findViewById(R.id.text_yearly_workouts);
+
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
+        Set<String> workoutsSet = sharedPreferences.getStringSet(WORKOUTS_KEY, null);
+
+        if (workoutsSet != null) {
+            Calendar calendar = Calendar.getInstance();
+            int currentWeek = calendar.get(Calendar.WEEK_OF_YEAR);
+            int currentMonth = calendar.get(Calendar.MONTH);
+            int currentYear = calendar.get(Calendar.YEAR);
+
+            int totalWorkouts = 0;
+            int weeklyWorkouts = 0;
+            int monthlyWorkouts = 0;
+            int yearlyWorkouts = 0;
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+
+            for (String workoutString : workoutsSet) {
+                Workout workout = Workout.fromString(workoutString);
+                if (workout != null) {
+                    try {
+                        Date workoutDate = dateFormat.parse(workout.getDate());
+                        calendar.setTime(workoutDate);
+
+                        totalWorkouts++;
+
+                        int workoutWeek = calendar.get(Calendar.WEEK_OF_YEAR);
+                        int workoutMonth = calendar.get(Calendar.MONTH);
+                        int workoutYear = calendar.get(Calendar.YEAR);
+
+                        if (workoutWeek == currentWeek && workoutYear == currentYear) {
+                            weeklyWorkouts++;
+                        }
+
+                        if (workoutMonth == currentMonth && workoutYear == currentYear) {
+                            monthlyWorkouts++;
+                        }
+
+                        if (workoutYear == currentYear) {
+                            yearlyWorkouts++;
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            textWeeklyWorkouts.setText("Workouts This Week: " + weeklyWorkouts);
+            textMonthlyWorkouts.setText("Workouts This Month: " + monthlyWorkouts);
+            textYearlyWorkouts.setText("Workouts This Year: " + yearlyWorkouts);
+            textTotalWorkouts.setText("Total Workouts: " + totalWorkouts);
+        }
     }
 
     private Map<String, Integer> getDailyWorkoutCountForCurrentWeek() {

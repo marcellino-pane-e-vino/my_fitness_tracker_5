@@ -38,7 +38,42 @@
                 android:layout_height="400dp"
                 android:layout_marginTop="16dp" />
 
-            <!-- Future graphs can be added here -->
+
+            <TextView
+                android:id="@+id/text_weekly_workouts"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Workouts This Week: "
+                android:layout_marginTop="8dp"
+                android:textSize="16sp"
+                android:textColor="@android:color/black" />
+
+            <TextView
+                android:id="@+id/text_monthly_workouts"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Workouts This Month: "
+                android:layout_marginTop="8dp"
+                android:textSize="16sp"
+                android:textColor="@android:color/black" />
+
+            <TextView
+                android:id="@+id/text_yearly_workouts"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Workouts This Year: "
+                android:layout_marginTop="8dp"
+                android:textSize="16sp"
+                android:textColor="@android:color/black" />
+
+            <TextView
+                android:id="@+id/text_total_workouts"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Total Workouts: "
+                android:layout_marginTop="16dp"
+                android:textSize="16sp"
+                android:textColor="@android:color/black" />
 
         </LinearLayout>
     </ScrollView>
