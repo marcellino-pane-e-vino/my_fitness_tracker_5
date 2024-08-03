@@ -1,17 +1,12 @@
 package com.example.my_fitness_tracker_5;
 
-import android.util.Base64;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+import androidx.annotation.NonNull;
 
 public class Workout {
 
-    private String description;
-    private String photoBase64;
-    private String date;
+    private final String description;
+    private final String photoBase64;
+    private final String date;
 
     public Workout(String description, String photoBase64, String date) {
         this.description = description;
@@ -33,6 +28,7 @@ public class Workout {
         return date;
     }
 
+    @NonNull
     @Override
     public String toString() {
         // Customize the format if needed

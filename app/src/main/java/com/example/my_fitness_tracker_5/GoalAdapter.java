@@ -9,6 +9,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -18,8 +20,8 @@ public class GoalAdapter extends ArrayAdapter<String> {
     private static final String SHARED_PREFS = "sharedPrefs";
     private static final String GOALS_KEY = "goals";
 
-    private Context context;
-    private ArrayList<String> goalsList;
+    private final Context context;
+    private final ArrayList<String> goalsList;
 
     public GoalAdapter(Context context, ArrayList<String> goalsList) {
         super(context, 0, goalsList);
@@ -27,8 +29,9 @@ public class GoalAdapter extends ArrayAdapter<String> {
         this.goalsList = goalsList;
     }
 
+    @NonNull
     @Override
-    public View getView(final int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, @NonNull ViewGroup parent) {
         if (convertView == null) {
             convertView = LayoutInflater.from(context).inflate(R.layout.list_item_goal, parent, false);
         }
@@ -39,13 +42,10 @@ public class GoalAdapter extends ArrayAdapter<String> {
         final String goal = getItem(position);
         textViewGoal.setText(goal);
 
-        buttonDelete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                goalsList.remove(position);
-                notifyDataSetChanged();
-                saveGoals();
-            }
+        buttonDelete.setOnClickListener(v -> {
+            goalsList.remove(position);
+            notifyDataSetChanged();
+            saveGoals();
         });
 
         return convertView;

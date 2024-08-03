@@ -5,9 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -29,18 +27,11 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.FragmentManager;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.FileProvider;
-import androidx.fragment.app.FragmentManager;
-
 
 import com.jjoe64.graphview.BuildConfig;
 
@@ -52,19 +43,17 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 
 public class AddWorkoutActivity extends AppCompatActivity {
 
     private static final String SHARED_PREFS = "sharedPrefs";
     private static final String WORKOUTS_KEY = "workouts";
-    private static final int REQUEST_IMAGE_CAPTURE = 1;
-    private static final int REQUEST_IMAGE_PICK = 2;
     private static final String TAG = "AddWorkoutActivity";
 
     private Spinner spinnerSport;
     private EditText editTextDistanceReps;
-    private Button buttonUploadPhoto, buttonTakePhoto, buttonConfirmWorkout;
     private ListView listViewWorkouts;
     private WorkoutAdapter workoutsAdapter;
     private ArrayList<Workout> workoutsList;
@@ -87,15 +76,15 @@ public class AddWorkoutActivity extends AppCompatActivity {
         context = this;
         spinnerSport = findViewById(R.id.spinner_sport);
         editTextDistanceReps = findViewById(R.id.editText_distance_reps);
-        buttonUploadPhoto = findViewById(R.id.button_upload_photo);
-        buttonTakePhoto = findViewById(R.id.button_take_photo);
-        buttonConfirmWorkout = findViewById(R.id.button_confirm_workout);
+        Button buttonUploadPhoto = findViewById(R.id.button_upload_photo);
+        Button buttonTakePhoto = findViewById(R.id.button_take_photo);
+        Button buttonConfirmWorkout = findViewById(R.id.button_confirm_workout);
         listViewWorkouts = findViewById(R.id.listView_workouts);
         imageViewPhotoPreview = findViewById(R.id.imageView_photo_preview);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Add a Workout");
 
         workoutsList = new ArrayList<>();
@@ -136,6 +125,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
 
         pickPhotoLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             if (result.getResultCode() == Activity.RESULT_OK) {
+                assert result.getData() != null;
                 Uri imageUri = result.getData().getData();
                 try {
                     Bitmap imageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
@@ -150,63 +140,49 @@ public class AddWorkoutActivity extends AppCompatActivity {
             }
         });
 
-        buttonUploadPhoto.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openGallery();
+        buttonUploadPhoto.setOnClickListener(v -> openGallery());
+
+        buttonTakePhoto.setOnClickListener(v -> {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissionLauncher.launch(Manifest.permission.CAMERA);
+            } else {
+                openCamera();
             }
         });
 
-        buttonTakePhoto.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                    requestPermissionLauncher.launch(Manifest.permission.CAMERA);
-                } else {
-                    openCamera();
-                }
+        buttonConfirmWorkout.setOnClickListener(v -> {
+            String sport = spinnerSport.getSelectedItem().toString();
+            String distanceReps = editTextDistanceReps.getText().toString();
+
+            if (distanceReps.isEmpty()) {
+                Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                return;
             }
-        });
 
-        buttonConfirmWorkout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String sport = spinnerSport.getSelectedItem().toString();
-                String distanceReps = editTextDistanceReps.getText().toString();
+            String workoutDescription = "Sport: " + sport + ", Distance/Reps: " + distanceReps;
 
-                if (distanceReps.isEmpty()) {
-                    Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                String workoutDescription = "Sport: " + sport + ", Distance/Reps: " + distanceReps;
-
-                // Validate the Base64 string before creating the Workout object
-                if (currentPhotoBase64 != null && !isValidBase64(currentPhotoBase64)) {
-                    Log.e("AddWorkoutActivity", "Invalid Base64 string");
-                    currentPhotoBase64 = null; // Reset the current photo if invalid
-                }
-
-                Workout workout = new Workout(workoutDescription, currentPhotoBase64, new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date()));
-                workoutsList.add(workout);
-                workoutsAdapter.notifyDataSetChanged();
-
-                saveWorkouts();
-                setListViewHeightBasedOnChildren(listViewWorkouts);
-
-                currentPhotoBase64 = null; // Reset the current photo after confirming
-                imageViewPhotoPreview.setVisibility(View.GONE); // Hide the photo preview
-                editTextDistanceReps.setText(""); // Clear the EditText
+            // Validate the Base64 string before creating the Workout object
+            if (currentPhotoBase64 != null && !isValidBase64(currentPhotoBase64)) {
+                Log.e("AddWorkoutActivity", "Invalid Base64 string");
+                currentPhotoBase64 = null; // Reset the current photo if invalid
             }
+
+            Workout workout = new Workout(workoutDescription, currentPhotoBase64, new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date()));
+            workoutsList.add(workout);
+            workoutsAdapter.notifyDataSetChanged();
+
+            saveWorkouts();
+            setListViewHeightBasedOnChildren(listViewWorkouts);
+
+            currentPhotoBase64 = null; // Reset the current photo after confirming
+            imageViewPhotoPreview.setVisibility(View.GONE); // Hide the photo preview
+            editTextDistanceReps.setText(""); // Clear the EditText
         });
 
 
-        imageViewPhotoPreview.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (currentPhotoBase64 != null) {
-                    showImagePreview(currentPhotoBase64);
-                }
+        imageViewPhotoPreview.setOnClickListener(v -> {
+            if (currentPhotoBase64 != null) {
+                showImagePreview(currentPhotoBase64);
             }
         });
     }
@@ -250,16 +226,11 @@ public class AddWorkoutActivity extends AppCompatActivity {
                     Toast.makeText(context, "Error creating photo file", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                if (photoFile != null) {
-                    Uri photoURI = FileProvider.getUriForFile(this,
-                            BuildConfig.APPLICATION_ID + ".fileprovider",
-                            photoFile);
-                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                    takePhotoLauncher.launch(takePictureIntent);
-                } else {
-                    Log.e(TAG, "Photo file is null");
-                    Toast.makeText(context, "Error creating photo file", Toast.LENGTH_SHORT).show();
-                }
+                Uri photoURI = FileProvider.getUriForFile(this,
+                        BuildConfig.APPLICATION_ID + ".fileprovider",
+                        photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                takePhotoLauncher.launch(takePictureIntent);
             } else {
                 Toast.makeText(context, "No camera app found. Please install a camera app.", Toast.LENGTH_SHORT).show();
             }
@@ -267,19 +238,6 @@ public class AddWorkoutActivity extends AppCompatActivity {
             Toast.makeText(context, "No camera available on this device", Toast.LENGTH_SHORT).show();
         }
     }
-
-    public static boolean isBase64(String str) {
-        if (str == null || str.isEmpty()) {
-            return false;
-        }
-        try {
-            Base64.decode(str, Base64.DEFAULT);
-            return true;
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
-    }
-
 
     private File createImageFile() throws IOException {
         // Create an image file name

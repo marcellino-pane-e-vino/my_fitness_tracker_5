@@ -1,6 +1,5 @@
 package com.example.my_fitness_tracker_5;
 
-import android.app.Dialog;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;

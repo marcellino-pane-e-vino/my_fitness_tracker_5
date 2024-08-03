@@ -2,7 +2,6 @@ package com.example.my_fitness_tracker_5;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -25,26 +24,11 @@ public class MainActivity extends AppCompatActivity {
         Button buttonViewProgress = findViewById(R.id.button_view_progress);
         Button buttonProfile = findViewById(R.id.button_profile);
 
-        buttonAddGoal.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, AddGoalActivity.class));
-            }
-        });
+        buttonAddGoal.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, AddGoalActivity.class)));
 
-        buttonAddWorkout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, AddWorkoutActivity.class));
-            }
-        });
+        buttonAddWorkout.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, AddWorkoutActivity.class)));
 
-        buttonViewProgress.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, ViewProgressActivity.class));
-            }
-        });
+        buttonViewProgress.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, ViewProgressActivity.class)));
 
 //        buttonProfile.setOnClickListener(new View.OnClickListener() {
 //            @Override

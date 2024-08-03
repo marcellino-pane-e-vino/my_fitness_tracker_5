@@ -1,5 +1,6 @@
 package com.example.my_fitness_tracker_5;
 
+import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -22,6 +23,7 @@ import androidx.appcompat.widget.Toolbar;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 public class AddGoalActivity extends AppCompatActivity {
@@ -31,7 +33,6 @@ public class AddGoalActivity extends AppCompatActivity {
 
     private Spinner spinnerSport;
     private EditText editTextDistanceReps;
-    private Button buttonSelectDate, buttonConfirmGoal;
     private TextView textViewSelectedDate;
     private ListView listViewGoals;
     private GoalAdapter goalsAdapter;
@@ -48,14 +49,14 @@ public class AddGoalActivity extends AppCompatActivity {
         context = this;
         spinnerSport = findViewById(R.id.spinner_sport);
         editTextDistanceReps = findViewById(R.id.editText_distance_reps);
-        buttonSelectDate = findViewById(R.id.button_select_date);
-        buttonConfirmGoal = findViewById(R.id.button_confirm_goal);
+        Button buttonSelectDate = findViewById(R.id.button_select_date);
+        Button buttonConfirmGoal = findViewById(R.id.button_confirm_goal);
         textViewSelectedDate = findViewById(R.id.textView_selected_date);
         listViewGoals = findViewById(R.id.listView_goals);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Add a Goal");
 
         goalsList = new ArrayList<>();
@@ -66,45 +67,40 @@ public class AddGoalActivity extends AppCompatActivity {
 
         loadGoals();
 
-        buttonSelectDate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Calendar calendar = Calendar.getInstance();
-                int year = calendar.get(Calendar.YEAR);
-                int month = calendar.get(Calendar.MONTH);
-                int day = calendar.get(Calendar.DAY_OF_MONTH);
+        buttonSelectDate.setOnClickListener(v -> {
+            Calendar calendar = Calendar.getInstance();
+            int year = calendar.get(Calendar.YEAR);
+            int month = calendar.get(Calendar.MONTH);
+            int day = calendar.get(Calendar.DAY_OF_MONTH);
 
-                DatePickerDialog datePickerDialog = new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
-                    @Override
-                    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                        selectedDate = dayOfMonth + "/" + (month + 1) + "/" + year;
-                        textViewSelectedDate.setText("Selected Date: " + selectedDate);
-                    }
-                }, year, month, day);
-                datePickerDialog.show();
-            }
+            DatePickerDialog datePickerDialog = new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
+                @SuppressLint("SetTextI18n")
+                @Override
+                public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                    selectedDate = dayOfMonth + "/" + (month + 1) + "/" + year;
+                    textViewSelectedDate.setText("Selected Date: " + selectedDate);
+                }
+            }, year, month, day);
+            datePickerDialog.show();
         });
 
-        buttonConfirmGoal.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String sport = spinnerSport.getSelectedItem().toString();
-                String distanceReps = editTextDistanceReps.getText().toString();
+        buttonConfirmGoal.setOnClickListener(v -> {
+            String sport = spinnerSport.getSelectedItem().toString();
+            String distanceReps = editTextDistanceReps.getText().toString();
 
-                if (distanceReps.isEmpty() || selectedDate.isEmpty()) {
-                    Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                String goal = "Sport: " + sport + ", Distance/Reps: " + distanceReps + ", Date: " + selectedDate;
-                goalsList.add(goal);
-                goalsAdapter.notifyDataSetChanged();
-
-                saveGoals();
-                setListViewHeightBasedOnChildren(listViewGoals);
-
-                scheduleNotification(goal, selectedDate);
+            if (distanceReps.isEmpty() || selectedDate.isEmpty()) {
+                Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            String goal = "Sport: " + sport + ", Distance/Reps: " + distanceReps + ", Date: " + selectedDate;
+            goalsList.add(goal);
+            goalsAdapter.notifyDataSetChanged();
+
+            saveGoals();
+            setListViewHeightBasedOnChildren(listViewGoals);
+
+            scheduleNotification(goal, selectedDate);
         });
     }
 
@@ -127,7 +123,7 @@ public class AddGoalActivity extends AppCompatActivity {
 
     private void loadGoals() {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
-        Set<String> goalsSet = sharedPreferences.getStringSet(GOALS_KEY, new HashSet<String>());
+        Set<String> goalsSet = sharedPreferences.getStringSet(GOALS_KEY, new HashSet<>());
         goalsList.clear();
         goalsList.addAll(goalsSet);
         goalsAdapter.notifyDataSetChanged();
