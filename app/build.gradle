@@ -42,4 +42,6 @@ dependencies {
     implementation libs.material.v1120
     implementation libs.core.v190
     implementation 'com.jjoe64:graphview:4.2.2'
+    implementation 'androidx.viewpager2:viewpager2:1.0.0'
+
 }
