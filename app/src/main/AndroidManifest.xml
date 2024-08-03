@@ -39,6 +39,9 @@
         <activity android:name=".AddGoalActivity" />
         <activity android:name=".AddWorkoutActivity" />
         <activity android:name=".ViewProgressActivity" />
+        <activity android:name=".ProfileActivity" />
+        <activity android:name=".LoginActivity"/>
+        <activity android:name=".RegisterActivity"/>
 
         <provider
             android:name="androidx.core.content.FileProvider"

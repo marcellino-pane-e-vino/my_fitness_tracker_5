@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.Objects;
 
@@ -13,6 +14,16 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+
+        // Check if the user is logged in
+        if (mAuth.getCurrentUser() == null) {
+            startActivity(new Intent(MainActivity.this, LoginActivity.class));
+            finish();
+            return;
+        }
+
         setContentView(R.layout.activity_main);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -30,11 +41,6 @@ public class MainActivity extends AppCompatActivity {
 
         buttonViewProgress.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, ViewProgressActivity.class)));
 
-//        buttonProfile.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                startActivity(new Intent(MainActivity.this, ProfileActivity.class));
-//            }
-//        });
+        buttonProfile.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, ProfileActivity.class)));
     }
 }

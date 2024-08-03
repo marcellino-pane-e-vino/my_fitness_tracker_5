@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ProfileActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        android:elevation="4dp" />
+
+    <TextView
+        android:id="@+id/textViewProfile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Profile"
+        android:layout_below="@id/toolbar"
+        android:layout_marginTop="16dp"
+        android:layout_centerHorizontal="true"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/textViewName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Name: John Doe"
+        android:layout_below="@id/textViewProfile"
+        android:layout_marginTop="16dp"
+        android:layout_centerHorizontal="true"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/textViewEmail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Email: johndoe@example.com"
+        android:layout_below="@id/textViewName"
+        android:layout_marginTop="8dp"
+        android:layout_centerHorizontal="true"
+        android:textSize="18sp" />
+
+    <Button
+        android:id="@+id/buttonLogout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Logout"
+        android:layout_below="@id/textViewEmail"
+        android:layout_margin="16dp"
+        android:layout_centerHorizontal="true" />
+</RelativeLayout>
