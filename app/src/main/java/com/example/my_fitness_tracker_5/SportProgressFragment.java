@@ -1,5 +1,7 @@
 package com.example.my_fitness_tracker_5;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -21,6 +23,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public class SportProgressFragment extends Fragment {
@@ -107,8 +110,9 @@ public class SportProgressFragment extends Fragment {
         return view;
     }
 
+    @SuppressLint("SetTextI18n")
     private void displayStatistics(TextView textTotalWorkouts, TextView textWeeklyWorkouts, TextView textMonthlyWorkouts, TextView textYearlyWorkouts) {
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences(ViewProgressActivity.SHARED_PREFS, getActivity().MODE_PRIVATE);
+        SharedPreferences sharedPreferences = requireActivity().getSharedPreferences(ViewProgressActivity.SHARED_PREFS, Context.MODE_PRIVATE);
         Set<String> workoutsSet = sharedPreferences.getStringSet(ViewProgressActivity.WORKOUTS_KEY, null);
 
         if (workoutsSet != null) {
@@ -129,6 +133,7 @@ public class SportProgressFragment extends Fragment {
                 if (workout != null && (sport.equals("General") || workout.getDescription().contains(sport))) {
                     try {
                         Date workoutDate = dateFormat.parse(workout.getDate());
+                        assert workoutDate != null;
                         calendar.setTime(workoutDate);
 
                         totalWorkouts++;
@@ -162,7 +167,8 @@ public class SportProgressFragment extends Fragment {
     }
 
     private Map<String, Integer> getDailyWorkoutCountForCurrentWeek() {
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences(ViewProgressActivity.SHARED_PREFS, getActivity().MODE_PRIVATE);
+        getActivity();
+        SharedPreferences sharedPreferences = requireActivity().getSharedPreferences(ViewProgressActivity.SHARED_PREFS, Context.MODE_PRIVATE);
         Set<String> workoutsSet = sharedPreferences.getStringSet(ViewProgressActivity.WORKOUTS_KEY, null);
 
         Map<String, Integer> dailyWorkoutCount = new HashMap<>();
@@ -179,6 +185,7 @@ public class SportProgressFragment extends Fragment {
                 if (workout != null && (sport.equals("General") || workout.getDescription().contains(sport))) {
                     try {
                         Date workoutDate = dateFormat.parse(workout.getDate());
+                        assert workoutDate != null;
                         calendar.setTime(workoutDate);
                         int workoutWeek = calendar.get(Calendar.WEEK_OF_YEAR);
                         int workoutYear = calendar.get(Calendar.YEAR);

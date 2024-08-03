@@ -1,6 +1,5 @@
 package com.example.my_fitness_tracker_5;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
