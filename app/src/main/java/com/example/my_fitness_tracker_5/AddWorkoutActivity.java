@@ -159,8 +159,10 @@ public class AddWorkoutActivity extends AppCompatActivity {
                 setListViewHeightBasedOnChildren(listViewWorkouts);
 
                 currentPhotoBase64 = null; // Reset the current photo after confirming
+                editTextDistanceReps.setText(""); // Clear the EditText
             }
         });
+
     }
 
     @Override
