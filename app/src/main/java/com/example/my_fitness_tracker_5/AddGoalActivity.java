@@ -30,7 +30,7 @@ public class AddGoalActivity extends AppCompatActivity {
     private static final String GOALS_KEY = "goals";
 
     private Spinner spinnerSport;
-    private EditText editTextDistanceReps, editTextTime;
+    private EditText editTextDistanceReps;
     private Button buttonSelectDate, buttonConfirmGoal;
     private TextView textViewSelectedDate;
     private ListView listViewGoals;
@@ -48,7 +48,6 @@ public class AddGoalActivity extends AppCompatActivity {
         context = this;
         spinnerSport = findViewById(R.id.spinner_sport);
         editTextDistanceReps = findViewById(R.id.editText_distance_reps);
-        editTextTime = findViewById(R.id.editText_time);
         buttonSelectDate = findViewById(R.id.button_select_date);
         buttonConfirmGoal = findViewById(R.id.button_confirm_goal);
         textViewSelectedDate = findViewById(R.id.textView_selected_date);
@@ -91,14 +90,13 @@ public class AddGoalActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String sport = spinnerSport.getSelectedItem().toString();
                 String distanceReps = editTextDistanceReps.getText().toString();
-                String time = editTextTime.getText().toString();
 
-                if (distanceReps.isEmpty() || time.isEmpty() || selectedDate.isEmpty()) {
+                if (distanceReps.isEmpty() || selectedDate.isEmpty()) {
                     Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                String goal = "Sport: " + sport + ", Distance/Reps: " + distanceReps + ", Time: " + time + " mins, Date: " + selectedDate;
+                String goal = "Sport: " + sport + ", Distance/Reps: " + distanceReps + ", Date: " + selectedDate;
                 goalsList.add(goal);
                 goalsAdapter.notifyDataSetChanged();
 
