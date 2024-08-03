@@ -6,6 +6,10 @@
     <string name="total_workouts">Total Workouts:</string>
     <string name="workouts_this_week">Workouts This Week:</string>
     <string name="workouts_this_year">Workouts This Year:</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="email">Email</string>
     <string-array name="sports_array">
         <item>Run</item>
         <item>Walk</item>
