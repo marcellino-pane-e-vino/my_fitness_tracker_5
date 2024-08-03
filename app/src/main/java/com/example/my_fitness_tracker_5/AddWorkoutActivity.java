@@ -37,6 +37,11 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.FragmentManager;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
+import androidx.fragment.app.FragmentManager;
+
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -44,6 +49,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 public class AddWorkoutActivity extends AppCompatActivity {
@@ -167,7 +173,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
                 }
 
                 String workoutDescription = "Sport: " + sport + ", Distance/Reps: " + distanceReps;
-                Workout workout = new Workout(workoutDescription, currentPhotoBase64);
+                Workout workout = new Workout(workoutDescription, currentPhotoBase64, new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date()));
                 workoutsList.add(workout);
                 workoutsAdapter.notifyDataSetChanged();
 
@@ -179,6 +185,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
                 editTextDistanceReps.setText(""); // Clear the EditText
             }
         });
+
 
         imageViewPhotoPreview.setOnClickListener(new View.OnClickListener() {
             @Override
