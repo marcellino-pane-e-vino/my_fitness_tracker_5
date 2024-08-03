@@ -35,6 +35,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
+import androidx.fragment.app.FragmentManager;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -178,6 +179,15 @@ public class AddWorkoutActivity extends AppCompatActivity {
                 editTextDistanceReps.setText(""); // Clear the EditText
             }
         });
+
+        imageViewPhotoPreview.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (currentPhotoBase64 != null) {
+                    showImagePreview(currentPhotoBase64);
+                }
+            }
+        });
     }
 
     @Override
@@ -287,5 +297,10 @@ public class AddWorkoutActivity extends AppCompatActivity {
         params.height = totalHeight + (listView.getDividerHeight() * (adapter.getCount() - 1));
         listView.setLayoutParams(params);
         listView.requestLayout();
+    }
+
+    private void showImagePreview(String imageBase64) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        ImagePreviewDialogFragment.newInstance(imageBase64).show(fragmentManager, "image_preview");
     }
 }
