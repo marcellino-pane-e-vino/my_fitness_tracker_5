@@ -8,7 +8,7 @@ import androidx.appcompat.widget.Toolbar;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.BarGraphSeries;
 import com.jjoe64.graphview.series.DataPoint;
-import com.jjoe64.graphview.series.Series;
+import com.jjoe64.graphview.DefaultLabelFormatter;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -23,6 +23,7 @@ public class ViewProgressActivity extends AppCompatActivity {
 
     private static final String SHARED_PREFS = "sharedPrefs";
     private static final String WORKOUTS_KEY = "workouts";
+    private static final String[] DAYS_OF_WEEK = {"Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,19 +46,36 @@ public class ViewProgressActivity extends AppCompatActivity {
         // Customize the graph
         graphWeeklyWorkouts.setTitle("Workouts This Week");
         graphWeeklyWorkouts.getGridLabelRenderer().setHorizontalAxisTitle("Day");
-        graphWeeklyWorkouts.getGridLabelRenderer().setVerticalAxisTitle("Workouts");
+
+        // Adjust viewport to show all seven days
         graphWeeklyWorkouts.getViewport().setMinX(1);
         graphWeeklyWorkouts.getViewport().setMaxX(7);
         graphWeeklyWorkouts.getViewport().setXAxisBoundsManual(true);
         graphWeeklyWorkouts.getGridLabelRenderer().setNumHorizontalLabels(7);
 
-        // Adjust bar width
-        series.setSpacing(10); // Set spacing between bars
-        series.setDataWidth(0.8); // Set the width of each bar
+        // Adjust bar width and spacing
+        series.setSpacing(5); // Adjust spacing between bars if needed
+        series.setDataWidth(0.2); // Set the width of each bar
 
         // Ensure the graph fits within the screen
-        graphWeeklyWorkouts.getViewport().setScrollable(true);
-        graphWeeklyWorkouts.getViewport().setScalableY(true);
+        graphWeeklyWorkouts.getViewport().setScrollable(false);
+        graphWeeklyWorkouts.getViewport().setScalable(false);
+        graphWeeklyWorkouts.getViewport().setScrollableY(false);
+        graphWeeklyWorkouts.getViewport().setScalableY(false);
+
+        // Custom label formatter to show day names
+        graphWeeklyWorkouts.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter() {
+            @Override
+            public String formatLabel(double value, boolean isValueX) {
+                if (isValueX) {
+                    int dayIndex = (int) value - 1;
+                    if (dayIndex >= 0 && dayIndex < DAYS_OF_WEEK.length) {
+                        return DAYS_OF_WEEK[dayIndex];
+                    }
+                }
+                return super.formatLabel(value, isValueX);
+            }
+        });
     }
 
     private Map<String, Integer> getDailyWorkoutCountForCurrentWeek() {
