@@ -227,7 +227,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
                     return;
                 }
                 Uri photoURI = FileProvider.getUriForFile(this,
-                        BuildConfig.APPLICATION_ID + ".fileprovider",
+                        "com.example.my_fitness_tracker_5.fileprovider",
                         photoFile);
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 takePhotoLauncher.launch(takePictureIntent);
@@ -238,6 +238,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
             Toast.makeText(context, "No camera available on this device", Toast.LENGTH_SHORT).show();
         }
     }
+
 
     private File createImageFile() throws IOException {
         // Create an image file name
@@ -276,7 +277,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
 
     private void loadWorkouts() {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
-        Set<String> workoutsSet = sharedPreferences.getStringSet(WORKOUTS_KEY, new HashSet<String>());
+        Set<String> workoutsSet = sharedPreferences.getStringSet(WORKOUTS_KEY, new HashSet<>());
         workoutsList.clear();
         for (String workoutString : workoutsSet) {
             Workout workout = Workout.fromString(workoutString);
