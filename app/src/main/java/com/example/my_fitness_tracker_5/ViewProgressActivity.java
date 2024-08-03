@@ -8,6 +8,7 @@ import androidx.appcompat.widget.Toolbar;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.BarGraphSeries;
 import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.Series;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -37,37 +38,69 @@ public class ViewProgressActivity extends AppCompatActivity {
 
         GraphView graphWeeklyWorkouts = findViewById(R.id.graph_weekly_workouts);
 
-        Map<String, Integer> weeklyWorkoutCount = getWeeklyWorkoutCount();
-        BarGraphSeries<DataPoint> series = new BarGraphSeries<>(getDataPoints(weeklyWorkoutCount));
+        Map<String, Integer> dailyWorkoutCount = getDailyWorkoutCountForCurrentWeek();
+        BarGraphSeries<DataPoint> series = new BarGraphSeries<>(getDataPoints(dailyWorkoutCount));
         graphWeeklyWorkouts.addSeries(series);
 
-        // Customize the graph (optional)
-        graphWeeklyWorkouts.setTitle("Workouts per Week");
-        graphWeeklyWorkouts.getGridLabelRenderer().setHorizontalAxisTitle("Week");
+        // Customize the graph
+        graphWeeklyWorkouts.setTitle("Workouts This Week");
+        graphWeeklyWorkouts.getGridLabelRenderer().setHorizontalAxisTitle("Day");
         graphWeeklyWorkouts.getGridLabelRenderer().setVerticalAxisTitle("Workouts");
+        graphWeeklyWorkouts.getViewport().setMinX(1);
+        graphWeeklyWorkouts.getViewport().setMaxX(7);
+        graphWeeklyWorkouts.getViewport().setXAxisBoundsManual(true);
+        graphWeeklyWorkouts.getGridLabelRenderer().setNumHorizontalLabels(7);
+
+        // Adjust bar width
+        series.setSpacing(10); // Set spacing between bars
+        series.setDataWidth(0.8); // Set the width of each bar
+
+        // Ensure the graph fits within the screen
+        graphWeeklyWorkouts.getViewport().setScrollable(true);
+        graphWeeklyWorkouts.getViewport().setScalableY(true);
     }
 
-    private Map<String, Integer> getWeeklyWorkoutCount() {
+    private Map<String, Integer> getDailyWorkoutCountForCurrentWeek() {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
         Set<String> workoutsSet = sharedPreferences.getStringSet(WORKOUTS_KEY, null);
 
-        Map<String, Integer> weeklyWorkoutCount = new HashMap<>();
+        Map<String, Integer> dailyWorkoutCount = new HashMap<>();
         if (workoutsSet != null) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-ww", Locale.getDefault());
+            Calendar calendar = Calendar.getInstance();
+            int currentWeek = calendar.get(Calendar.WEEK_OF_YEAR);
+            int currentYear = calendar.get(Calendar.YEAR);
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+            SimpleDateFormat dayFormat = new SimpleDateFormat("u", Locale.getDefault()); // Day of the week (1 = Monday, ..., 7 = Sunday)
+
             for (String workoutString : workoutsSet) {
                 Workout workout = Workout.fromString(workoutString);
-                String week = dateFormat.format(new Date());
-                weeklyWorkoutCount.put(week, weeklyWorkoutCount.getOrDefault(week, 0) + 1);
+                if (workout != null) {
+                    try {
+                        Date workoutDate = dateFormat.parse(workout.getDate());
+                        calendar.setTime(workoutDate);
+                        int workoutWeek = calendar.get(Calendar.WEEK_OF_YEAR);
+                        int workoutYear = calendar.get(Calendar.YEAR);
+
+                        if (workoutWeek == currentWeek && workoutYear == currentYear) {
+                            String day = dayFormat.format(workoutDate);
+                            dailyWorkoutCount.put(day, dailyWorkoutCount.getOrDefault(day, 0) + 1);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         }
-        return weeklyWorkoutCount;
+        return dailyWorkoutCount;
     }
 
-    private DataPoint[] getDataPoints(Map<String, Integer> weeklyWorkoutCount) {
-        DataPoint[] dataPoints = new DataPoint[weeklyWorkoutCount.size()];
-        int index = 0;
-        for (Map.Entry<String, Integer> entry : weeklyWorkoutCount.entrySet()) {
-            dataPoints[index++] = new DataPoint(Integer.parseInt(entry.getKey().split("-")[1]), entry.getValue());
+    private DataPoint[] getDataPoints(Map<String, Integer> dailyWorkoutCount) {
+        DataPoint[] dataPoints = new DataPoint[7];
+        for (int i = 1; i <= 7; i++) {
+            String day = String.valueOf(i);
+            int count = dailyWorkoutCount.getOrDefault(day, 0);
+            dataPoints[i - 1] = new DataPoint(i, count);
         }
         return dataPoints;
     }

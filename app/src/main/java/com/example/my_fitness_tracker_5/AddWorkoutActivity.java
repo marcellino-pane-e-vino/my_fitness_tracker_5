@@ -1,7 +1,9 @@
 package com.example.my_fitness_tracker_5;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -19,10 +21,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -33,13 +37,12 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.FragmentManager;
 
-import com.jjoe64.graphview.BuildConfig;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Locale;
@@ -54,11 +57,13 @@ public class AddWorkoutActivity extends AppCompatActivity {
 
     private Spinner spinnerSport;
     private EditText editTextDistanceReps;
+    private TextView textViewSelectedDate;
     private ListView listViewWorkouts;
     private WorkoutAdapter workoutsAdapter;
     private ArrayList<Workout> workoutsList;
     private String currentPhotoBase64;
     private ImageView imageViewPhotoPreview;
+    private Button buttonSelectDate;
 
     private Context context;
 
@@ -67,6 +72,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
     private ActivityResultLauncher<Intent> pickPhotoLauncher;
 
     private String currentPhotoPath;
+    private String selectedDate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +82,8 @@ public class AddWorkoutActivity extends AppCompatActivity {
         context = this;
         spinnerSport = findViewById(R.id.spinner_sport);
         editTextDistanceReps = findViewById(R.id.editText_distance_reps);
+        buttonSelectDate = findViewById(R.id.button_select_date);
+        textViewSelectedDate = findViewById(R.id.textView_selected_date);
         Button buttonUploadPhoto = findViewById(R.id.button_upload_photo);
         Button buttonTakePhoto = findViewById(R.id.button_take_photo);
         Button buttonConfirmWorkout = findViewById(R.id.button_confirm_workout);
@@ -150,11 +158,13 @@ public class AddWorkoutActivity extends AppCompatActivity {
             }
         });
 
+        buttonSelectDate.setOnClickListener(v -> showDatePickerDialog());
+
         buttonConfirmWorkout.setOnClickListener(v -> {
             String sport = spinnerSport.getSelectedItem().toString();
             String distanceReps = editTextDistanceReps.getText().toString();
 
-            if (distanceReps.isEmpty()) {
+            if (distanceReps.isEmpty() || selectedDate == null) {
                 Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -167,7 +177,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
                 currentPhotoBase64 = null; // Reset the current photo if invalid
             }
 
-            Workout workout = new Workout(workoutDescription, currentPhotoBase64, new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date()));
+            Workout workout = new Workout(workoutDescription, currentPhotoBase64, selectedDate);
             workoutsList.add(workout);
             workoutsAdapter.notifyDataSetChanged();
 
@@ -177,8 +187,9 @@ public class AddWorkoutActivity extends AppCompatActivity {
             currentPhotoBase64 = null; // Reset the current photo after confirming
             imageViewPhotoPreview.setVisibility(View.GONE); // Hide the photo preview
             editTextDistanceReps.setText(""); // Clear the EditText
+            textViewSelectedDate.setText("No date selected"); // Clear the date text
+            selectedDate = null; // Clear the selected date
         });
-
 
         imageViewPhotoPreview.setOnClickListener(v -> {
             if (currentPhotoBase64 != null) {
@@ -187,6 +198,22 @@ public class AddWorkoutActivity extends AppCompatActivity {
         });
     }
 
+    private void showDatePickerDialog() {
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                selectedDate = dayOfMonth + "/" + (month + 1) + "/" + year;
+                textViewSelectedDate.setText("Selected Date: " + selectedDate);
+            }
+        }, year, month, day);
+        datePickerDialog.show();
+    }
 
     private boolean isValidBase64(String str) {
         if (str == null || str.isEmpty()) {
@@ -239,7 +266,6 @@ public class AddWorkoutActivity extends AppCompatActivity {
         }
     }
 
-
     private File createImageFile() throws IOException {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
@@ -255,7 +281,6 @@ public class AddWorkoutActivity extends AppCompatActivity {
         currentPhotoPath = image.getAbsolutePath();
         return image;
     }
-
 
     private String encodeBase64(Bitmap image) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();

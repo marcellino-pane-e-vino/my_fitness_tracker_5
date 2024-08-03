@@ -44,6 +44,22 @@
                 android:layout_marginTop="16dp" />
 
             <Button
+                android:id="@+id/button_select_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Select Date"
+                android:layout_marginTop="16dp"
+                android:layout_gravity="center_horizontal" />
+
+            <TextView
+                android:id="@+id/textView_selected_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No date selected"
+                android:layout_marginTop="8dp"
+                android:layout_gravity="center_horizontal" />
+
+            <Button
                 android:id="@+id/button_upload_photo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
