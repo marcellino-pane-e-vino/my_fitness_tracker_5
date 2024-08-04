@@ -25,6 +25,42 @@
             android:layout_height="400dp"
             android:layout_marginTop="16dp" />
 
+        <TextView
+            android:id="@+id/text_total_sport_workouts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/total_sport_workouts"
+            android:layout_marginTop="16dp"
+            android:textSize="16sp"
+            android:textColor="@android:color/black" />
+
+        <TextView
+            android:id="@+id/text_weekly_sport_workouts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/weekly_sport_workouts"
+            android:layout_marginTop="8dp"
+            android:textSize="16sp"
+            android:textColor="@android:color/black" />
+
+        <TextView
+            android:id="@+id/text_monthly_sport_workouts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/monthly_sport_workouts"
+            android:layout_marginTop="8dp"
+            android:textSize="16sp"
+            android:textColor="@android:color/black" />
+
+        <TextView
+            android:id="@+id/text_yearly_sport_workouts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/yearly_sport_workouts"
+            android:layout_marginTop="8dp"
+            android:textSize="16sp"
+            android:textColor="@android:color/black" />
+
         <com.jjoe64.graphview.GraphView
             android:id="@+id/graph_distance_reps"
             android:layout_width="match_parent"
@@ -32,37 +68,37 @@
             android:layout_marginTop="16dp" />
 
         <TextView
-            android:id="@+id/text_total_workouts"
+            android:id="@+id/text_total_distance_reps"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/total_workouts"
+            android:text="@string/total_distance_reps"
             android:layout_marginTop="16dp"
             android:textSize="16sp"
             android:textColor="@android:color/black" />
 
         <TextView
-            android:id="@+id/text_weekly_workouts"
+            android:id="@+id/text_weekly_distance_reps"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/workouts_this_week"
+            android:text="@string/weekly_distance_reps"
             android:layout_marginTop="8dp"
             android:textSize="16sp"
             android:textColor="@android:color/black" />
 
         <TextView
-            android:id="@+id/text_monthly_workouts"
+            android:id="@+id/text_monthly_distance_reps"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/workouts_this_month"
+            android:text="@string/monthly_distance_reps"
             android:layout_marginTop="8dp"
             android:textSize="16sp"
             android:textColor="@android:color/black" />
 
         <TextView
-            android:id="@+id/text_yearly_workouts"
+            android:id="@+id/text_yearly_distance_reps"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/workouts_this_year"
+            android:text="@string/yearly_distance_reps"
             android:layout_marginTop="8dp"
             android:textSize="16sp"
             android:textColor="@android:color/black" />

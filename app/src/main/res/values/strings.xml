@@ -18,6 +18,14 @@
     <string name="old_password">Old Password</string>
     <string name="new_password">New Password</string>
     <string name="confirm_new_password">Confirm New Password</string>
+    <string name="total_sport_workouts">Total %1$s Workouts:</string>
+    <string name="weekly_sport_workouts">%1$s Workouts This Week:</string>
+    <string name="monthly_sport_workouts">%1$s Workouts This Month:</string>
+    <string name="yearly_sport_workouts">%1$s Workouts This Year:</string>
+    <string name="total_distance_reps">Total %1$s Distance/Reps:</string>
+    <string name="weekly_distance_reps">%1$s Distance/Reps This Week:</string>
+    <string name="monthly_distance_reps">%1$s Distance/Reps This Month:</string>
+    <string name="yearly_distance_reps">%1$s Distance/Reps This Year:</string>
     <string-array name="sports_array">
         <item>Run</item>
         <item>Walk</item>

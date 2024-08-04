@@ -59,18 +59,25 @@ public class SportProgressFragment extends Fragment {
 
         GraphView graphSportWorkouts = view.findViewById(R.id.graph_sport_workouts);
         GraphView graphDistanceReps = view.findViewById(R.id.graph_distance_reps);
-        TextView textTotalWorkouts = view.findViewById(R.id.text_total_workouts);
-        TextView textWeeklyWorkouts = view.findViewById(R.id.text_weekly_workouts);
-        TextView textMonthlyWorkouts = view.findViewById(R.id.text_monthly_workouts);
-        TextView textYearlyWorkouts = view.findViewById(R.id.text_yearly_workouts);
+        TextView textTotalSportWorkouts = view.findViewById(R.id.text_total_sport_workouts);
+        TextView textWeeklySportWorkouts = view.findViewById(R.id.text_weekly_sport_workouts);
+        TextView textMonthlySportWorkouts = view.findViewById(R.id.text_monthly_sport_workouts);
+        TextView textYearlySportWorkouts = view.findViewById(R.id.text_yearly_sport_workouts);
+        TextView textTotalDistanceReps = view.findViewById(R.id.text_total_distance_reps);
+        TextView textWeeklyDistanceReps = view.findViewById(R.id.text_weekly_distance_reps);
+        TextView textMonthlyDistanceReps = view.findViewById(R.id.text_monthly_distance_reps);
+        TextView textYearlyDistanceReps = view.findViewById(R.id.text_yearly_distance_reps);
 
         // Fetch data from Firestore and display it
-        fetchWorkoutDataAndDisplay(graphSportWorkouts, graphDistanceReps, textTotalWorkouts, textWeeklyWorkouts, textMonthlyWorkouts, textYearlyWorkouts);
+        fetchWorkoutDataAndDisplay(graphSportWorkouts, graphDistanceReps, textTotalSportWorkouts, textWeeklySportWorkouts, textMonthlySportWorkouts, textYearlySportWorkouts,
+                textTotalDistanceReps, textWeeklyDistanceReps, textMonthlyDistanceReps, textYearlyDistanceReps);
 
         return view;
     }
 
-    private void fetchWorkoutDataAndDisplay(GraphView graphSportWorkouts, GraphView graphDistanceReps, TextView textTotalWorkouts, TextView textWeeklyWorkouts, TextView textMonthlyWorkouts, TextView textYearlyWorkouts) {
+    private void fetchWorkoutDataAndDisplay(GraphView graphSportWorkouts, GraphView graphDistanceReps, TextView textTotalSportWorkouts,
+                                            TextView textWeeklySportWorkouts, TextView textMonthlySportWorkouts, TextView textYearlySportWorkouts,
+                                            TextView textTotalDistanceReps, TextView textWeeklyDistanceReps, TextView textMonthlyDistanceReps, TextView textYearlyDistanceReps) {
         String uid = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         db.collection("users").document(uid).collection("workouts")
                 .get()
@@ -78,10 +85,14 @@ public class SportProgressFragment extends Fragment {
                     if (task.isSuccessful()) {
                         Map<String, Integer> dailyWorkoutCount = new HashMap<>();
                         Map<String, Double> dailyDistanceReps = new HashMap<>();
-                        int totalWorkouts = 0;
-                        int weeklyWorkouts = 0;
-                        int monthlyWorkouts = 0;
-                        int yearlyWorkouts = 0;
+                        int totalSportWorkouts = 0;
+                        int weeklySportWorkouts = 0;
+                        int monthlySportWorkouts = 0;
+                        int yearlySportWorkouts = 0;
+                        double totalDistanceReps = 0;
+                        double weeklyDistanceReps = 0;
+                        double monthlyDistanceReps = 0;
+                        double yearlyDistanceReps = 0;
 
                         Calendar calendar = Calendar.getInstance();
                         int currentWeek = calendar.get(Calendar.WEEK_OF_YEAR);
@@ -94,34 +105,44 @@ public class SportProgressFragment extends Fragment {
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             Workout workout = document.toObject(Workout.class);
                             Log.d("SportProgressFragment", "Fetched workout: " + workout.toString());
-                            if (workout != null && (sport.equals("General") || (workout.getSport() != null && workout.getSport().equalsIgnoreCase(sport)))) {
+                            if (workout != null && (sport.equalsIgnoreCase("General") || (workout.getSport() != null && workout.getSport().equalsIgnoreCase(sport)))) {
                                 try {
                                     Date workoutDate = dateFormat.parse(workout.getDate());
                                     assert workoutDate != null;
                                     calendar.setTime(workoutDate);
 
-                                    totalWorkouts++;
+                                    totalSportWorkouts++;
 
                                     int workoutWeek = calendar.get(Calendar.WEEK_OF_YEAR);
                                     int workoutMonth = calendar.get(Calendar.MONTH);
                                     int workoutYear = calendar.get(Calendar.YEAR);
 
                                     if (workoutWeek == currentWeek && workoutYear == currentYear) {
-                                        weeklyWorkouts++;
+                                        weeklySportWorkouts++;
                                     }
 
                                     if (workoutMonth == currentMonth && workoutYear == currentYear) {
-                                        monthlyWorkouts++;
+                                        monthlySportWorkouts++;
                                     }
 
                                     if (workoutYear == currentYear) {
-                                        yearlyWorkouts++;
+                                        yearlySportWorkouts++;
                                     }
 
                                     String day = dayFormat.format(workoutDate);
                                     dailyWorkoutCount.put(day, dailyWorkoutCount.getOrDefault(day, 0) + 1);
 
                                     double distanceReps = Double.parseDouble(workout.getDistanceReps());
+                                    totalDistanceReps += distanceReps;
+                                    if (workoutWeek == currentWeek && workoutYear == currentYear) {
+                                        weeklyDistanceReps += distanceReps;
+                                    }
+                                    if (workoutMonth == currentMonth && workoutYear == currentYear) {
+                                        monthlyDistanceReps += distanceReps;
+                                    }
+                                    if (workoutYear == currentYear) {
+                                        yearlyDistanceReps += distanceReps;
+                                    }
                                     dailyDistanceReps.put(day, dailyDistanceReps.getOrDefault(day, 0.0) + distanceReps);
                                 } catch (Exception e) {
                                     e.printStackTrace();
@@ -190,10 +211,27 @@ public class SportProgressFragment extends Fragment {
                             }
                         });
 
-                        textTotalWorkouts.setText("Total Workouts: " + totalWorkouts);
-                        textWeeklyWorkouts.setText("Workouts This Week: " + weeklyWorkouts);
-                        textMonthlyWorkouts.setText("Workouts This Month: " + monthlyWorkouts);
-                        textYearlyWorkouts.setText("Workouts This Year: " + yearlyWorkouts);
+                        textTotalSportWorkouts.setText("Total " + sport + " Workouts: " + totalSportWorkouts);
+                        textWeeklySportWorkouts.setText(sport + " Workouts This Week: " + weeklySportWorkouts);
+                        textMonthlySportWorkouts.setText(sport + " Workouts This Month: " + monthlySportWorkouts);
+                        textYearlySportWorkouts.setText(sport + " Workouts This Year: " + yearlySportWorkouts);
+
+                        if (!sport.equalsIgnoreCase("General")) {
+                            textTotalDistanceReps.setVisibility(View.VISIBLE);
+                            textWeeklyDistanceReps.setVisibility(View.VISIBLE);
+                            textMonthlyDistanceReps.setVisibility(View.VISIBLE);
+                            textYearlyDistanceReps.setVisibility(View.VISIBLE);
+
+                            textTotalDistanceReps.setText("Total " + sport + " Distance/Reps: " + totalDistanceReps);
+                            textWeeklyDistanceReps.setText(sport + " Distance/Reps This Week: " + weeklyDistanceReps);
+                            textMonthlyDistanceReps.setText(sport + " Distance/Reps This Month: " + monthlyDistanceReps);
+                            textYearlyDistanceReps.setText(sport + " Distance/Reps This Year: " + yearlyDistanceReps);
+                        } else {
+                            textTotalDistanceReps.setVisibility(View.GONE);
+                            textWeeklyDistanceReps.setVisibility(View.GONE);
+                            textMonthlyDistanceReps.setVisibility(View.GONE);
+                            textYearlyDistanceReps.setVisibility(View.GONE);
+                        }
                     } else {
                         Log.e("SportProgressFragment", "Error fetching workouts: ", task.getException());
                     }
