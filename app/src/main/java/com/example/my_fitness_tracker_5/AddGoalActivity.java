@@ -8,7 +8,6 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,6 +15,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -55,7 +56,7 @@ public class AddGoalActivity extends AppCompatActivity {
         Button buttonSelectDate = findViewById(R.id.button_select_date);
         Button buttonConfirmGoal = findViewById(R.id.button_confirm_goal);
         textViewSelectedDate = findViewById(R.id.textView_selected_date);
-        ListView listViewGoals = findViewById(R.id.listView_goals);
+        RecyclerView recyclerViewGoals = findViewById(R.id.recyclerView_goals);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -65,7 +66,8 @@ public class AddGoalActivity extends AppCompatActivity {
 
         goalsList = new ArrayList<>();
         goalsAdapter = new GoalAdapter(this, goalsList);
-        listViewGoals.setAdapter(goalsAdapter);
+        recyclerViewGoals.setLayoutManager(new LinearLayoutManager(this));
+        recyclerViewGoals.setAdapter(goalsAdapter);
 
         selectedDate = "";
 
@@ -75,12 +77,9 @@ public class AddGoalActivity extends AppCompatActivity {
             int month = calendar.get(Calendar.MONTH);
             int day = calendar.get(Calendar.DAY_OF_MONTH);
 
-            DatePickerDialog datePickerDialog = new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
-                @Override
-                public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                    selectedDate = dayOfMonth + "/" + (month + 1) + "/" + year;
-                    textViewSelectedDate.setText("Selected Date: " + selectedDate);
-                }
+            DatePickerDialog datePickerDialog = new DatePickerDialog(context, (view, year1, month1, dayOfMonth) -> {
+                selectedDate = dayOfMonth + "/" + (month1 + 1) + "/" + year1;
+                textViewSelectedDate.setText("Selected Date: " + selectedDate);
             }, year, month, day);
             datePickerDialog.show();
         });
