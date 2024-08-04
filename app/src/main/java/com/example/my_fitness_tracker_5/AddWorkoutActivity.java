@@ -312,13 +312,10 @@ public class AddWorkoutActivity extends AppCompatActivity {
                 .addOnSuccessListener(documentReference -> {
                     Toast.makeText(AddWorkoutActivity.this, "Workout added", Toast.LENGTH_SHORT).show();
                     goalCheckUtil.checkGoalCompletion(sport, Double.parseDouble(distanceReps));
-                    // Schedule the GoalCheckWorker
-                    OneTimeWorkRequest goalCheckWorkRequest = new OneTimeWorkRequest.Builder(GoalCheckWorker.class)
-                            .build();
-                    WorkManager.getInstance(context).enqueue(goalCheckWorkRequest);
                 })
                 .addOnFailureListener(e -> Toast.makeText(AddWorkoutActivity.this, "Failed to add workout", Toast.LENGTH_SHORT).show());
     }
+
 
     private void loadWorkouts() {
         String uid = mAuth.getCurrentUser().getUid();

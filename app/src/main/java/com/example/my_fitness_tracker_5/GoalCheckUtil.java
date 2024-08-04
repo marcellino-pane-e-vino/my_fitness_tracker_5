@@ -12,6 +12,11 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 public class GoalCheckUtil {
 
     private static final String CHANNEL_ID = "goal_notification_channel";
@@ -26,7 +31,7 @@ public class GoalCheckUtil {
         createNotificationChannel();
     }
 
-    public void checkGoalCompletion(String sport, double totalDistanceReps) {
+    public void checkGoalCompletion(String sport, double distance) {
         String uid = mAuth.getCurrentUser().getUid();
         db.collection("users").document(uid).collection("goals")
                 .whereEqualTo("sport", sport)
@@ -34,9 +39,24 @@ public class GoalCheckUtil {
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
                         String goalDistanceReps = document.getString("distanceReps");
-                        if (goalDistanceReps != null && totalDistanceReps >= Double.parseDouble(goalDistanceReps)) {
-                            sendNotification("Goal Achieved", "You have reached your goal: " + document.getString("sport") + ", " + document.getString("distanceReps") + " " + document.getString("date"));
-                            db.collection("users").document(uid).collection("goals").document(document.getId()).delete();
+                        String goalStartDate = document.getString("startDate");
+                        String goalExpiryDateStr = document.getString("expiryDate");
+
+                        if (goalDistanceReps != null && goalStartDate != null && goalExpiryDateStr != null && distance >= Double.parseDouble(goalDistanceReps)) {
+                            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                            try {
+                                Date goalStart = sdf.parse(goalStartDate);
+                                Date goalExpiry = sdf.parse(goalExpiryDateStr);
+
+                                if (goalStart != null && goalExpiry != null) {
+                                    if (goalStart.before(new Date()) && goalExpiry.after(new Date())) {
+                                        sendNotification("Goal Achieved", "You have reached your goal: " + document.getString("sport") + ", " + document.getString("distanceReps") + " " + document.getString("expiryDate"));
+                                        db.collection("users").document(uid).collection("goals").document(document.getId()).delete();
+                                    }
+                                }
+                            } catch (ParseException e) {
+                                Log.e("GoalCheckUtil", "Failed to parse goal dates", e);
+                            }
                         }
                     }
                 })

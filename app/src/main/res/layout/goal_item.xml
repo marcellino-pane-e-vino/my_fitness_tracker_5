@@ -13,7 +13,16 @@
         android:text="Goal"
         android:textSize="16sp" />
 
-    <ImageView
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:max="100"
+        android:progress="0"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_gravity="center_vertical"/>
+
+    <ImageButton
         android:id="@+id/imageView_delete"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

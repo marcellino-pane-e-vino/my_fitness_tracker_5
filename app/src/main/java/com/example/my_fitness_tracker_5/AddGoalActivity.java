@@ -37,9 +37,9 @@ public class AddGoalActivity extends AppCompatActivity {
     private TextView textViewSelectedDate;
     private GoalAdapter goalsAdapter;
     private ArrayList<String> goalsList;
-    private ArrayList<String> goalIds;
 
-    private String selectedDate;
+    private String selectedStartDate;
+    private String selectedExpiryDate;
     private Context context;
 
     private FirebaseAuth mAuth;
@@ -57,7 +57,8 @@ public class AddGoalActivity extends AppCompatActivity {
         GoalCheckUtil goalCheckUtil = new GoalCheckUtil(context);
         spinnerSport = findViewById(R.id.spinner_sport);
         editTextDistanceReps = findViewById(R.id.editText_distance_reps);
-        Button buttonSelectDate = findViewById(R.id.button_select_date);
+        // start date is always current date
+        Button buttonSelectExpiryDate = findViewById(R.id.button_select_date);
         Button buttonConfirmGoal = findViewById(R.id.button_confirm_goal);
         textViewSelectedDate = findViewById(R.id.textView_selected_date);
         RecyclerView recyclerViewGoals = findViewById(R.id.recyclerView_goals);
@@ -69,66 +70,67 @@ public class AddGoalActivity extends AppCompatActivity {
         Objects.requireNonNull(toolbar.getNavigationIcon()).setColorFilter(ContextCompat.getColor(this, android.R.color.white), PorterDuff.Mode.SRC_ATOP);
 
         goalsList = new ArrayList<>();
-        goalIds = new ArrayList<>();
-        goalsAdapter = new GoalAdapter(this, goalsList, goalIds, db);
+        goalsAdapter = new GoalAdapter(this, goalsList);
         recyclerViewGoals.setLayoutManager(new LinearLayoutManager(this));
         recyclerViewGoals.setAdapter(goalsAdapter);
 
-        selectedDate = "";
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        selectedStartDate = sdf.format(Calendar.getInstance().getTime());
+        selectedExpiryDate = "";
 
-        buttonSelectDate.setOnClickListener(v -> {
-            Calendar calendar = Calendar.getInstance();
-            int year = calendar.get(Calendar.YEAR);
-            int month = calendar.get(Calendar.MONTH);
-            int day = calendar.get(Calendar.DAY_OF_MONTH);
-
-            DatePickerDialog datePickerDialog = new DatePickerDialog(context, (view, year1, month1, dayOfMonth) -> {
-                selectedDate = dayOfMonth + "/" + (month1 + 1) + "/" + year1;
-                textViewSelectedDate.setText("Selected Date: " + selectedDate);
-            }, year, month, day);
-            datePickerDialog.show();
-        });
+        buttonSelectExpiryDate.setOnClickListener(v -> showDatePickerDialog(false));
 
         buttonConfirmGoal.setOnClickListener(v -> {
             String sport = spinnerSport.getSelectedItem().toString();
             String distanceReps = editTextDistanceReps.getText().toString();
 
-            if (distanceReps.isEmpty()) {
+            if (distanceReps.isEmpty() || selectedStartDate.isEmpty() || selectedExpiryDate.isEmpty()) {
                 Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            String goal;
-            if (selectedDate.isEmpty()) {
-                selectedDate = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Calendar.getInstance().getTime());
-                goal = "Sport: " + sport + ", Distance/Reps: " + distanceReps + ", Start Date: " + selectedDate;
-            } else {
-                goal = "Sport: " + sport + ", Distance/Reps: " + distanceReps + ", Expiry Date: " + selectedDate;
-            }
+            String goal = "Sport: " + sport + ", Distance/Reps: " + distanceReps + ", Start Date: " + selectedStartDate + ", Expiry Date: " + selectedExpiryDate;
 
             goalsList.add(goal);
             goalsAdapter.notifyDataSetChanged();
 
-            saveGoalToFirestore(sport, distanceReps, selectedDate);
+            saveGoalToFirestore(sport, distanceReps, selectedStartDate, selectedExpiryDate);
         });
 
         loadUserGoals();
     }
 
-    private void saveGoalToFirestore(String sport, String distanceReps, String date) {
+    private void showDatePickerDialog(boolean isStartDate) {
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(context, (view, year1, month1, dayOfMonth) -> {
+            String selectedDate = dayOfMonth + "/" + (month1 + 1) + "/" + year1;
+            if (isStartDate) {
+                selectedStartDate = selectedDate;
+                textViewSelectedDate.setText("Selected Start Date: " + selectedStartDate);
+            } else {
+                selectedExpiryDate = selectedDate;
+                textViewSelectedDate.setText("Selected Expiry Date: " + selectedExpiryDate);
+            }
+        }, year, month, day);
+        datePickerDialog.show();
+    }
+
+    private void saveGoalToFirestore(String sport, String distanceReps, String startDate, String expiryDate) {
         String uid = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
 
         Map<String, Object> goal = new HashMap<>();
         goal.put("uid", uid);
         goal.put("sport", sport);
         goal.put("distanceReps", distanceReps);
-        goal.put("date", date);
+        goal.put("startDate", startDate);
+        goal.put("expiryDate", expiryDate);
 
         db.collection("users").document(uid).collection("goals").add(goal)
-                .addOnSuccessListener(documentReference -> {
-                    Toast.makeText(AddGoalActivity.this, "Goal added", Toast.LENGTH_SHORT).show();
-                    loadUserGoals();  // Refresh the goal list
-                })
+                .addOnSuccessListener(documentReference -> Toast.makeText(AddGoalActivity.this, "Goal added", Toast.LENGTH_SHORT).show())
                 .addOnFailureListener(e -> Toast.makeText(AddGoalActivity.this, "Failed to add goal", Toast.LENGTH_SHORT).show());
     }
 
@@ -137,14 +139,13 @@ public class AddGoalActivity extends AppCompatActivity {
         db.collection("users").document(uid).collection("goals").get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     goalsList.clear();
-                    goalIds.clear();
                     for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
                         String sport = document.getString("sport");
                         String distanceReps = document.getString("distanceReps");
-                        String date = document.getString("date");
-                        String goal = "Sport: " + sport + ", Distance/Reps: " + distanceReps + ", Date: " + date;
+                        String startDate = document.getString("startDate");
+                        String expiryDate = document.getString("expiryDate");
+                        String goal = "Sport: " + sport + ", Distance/Reps: " + distanceReps + ", Start Date: " + startDate + ", Expiry Date: " + expiryDate;
                         goalsList.add(goal);
-                        goalIds.add(document.getId());
                     }
                     goalsAdapter.notifyDataSetChanged();
                 })
