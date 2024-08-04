@@ -45,6 +45,7 @@ public class SquatCounterActivity extends AppCompatActivity implements SensorEve
         textSquatCount = findViewById(R.id.text_squat_count);
         buttonStartSquats = findViewById(R.id.button_start_squats);
         buttonStopSquats = findViewById(R.id.button_stop_squats);
+        buttonStopSquats.setEnabled(false);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -76,6 +77,7 @@ public class SquatCounterActivity extends AppCompatActivity implements SensorEve
         squatCount = 0;
         lastY = 0;
         buttonStartSquats.setEnabled(false);
+        buttonStopSquats.setEnabled(true);
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
@@ -83,7 +85,11 @@ public class SquatCounterActivity extends AppCompatActivity implements SensorEve
         isCounting = false;
         sensorManager.unregisterListener(this);
         textSquatCount.setText("Squats: " + squatCount);
-        saveWorkoutToFirestore();
+        if (squatCount == 0) {
+            buttonStopSquats.setEnabled(false);
+        } else {
+            saveWorkoutToFirestore();
+        }
     }
 
     private void saveWorkoutToFirestore() {
