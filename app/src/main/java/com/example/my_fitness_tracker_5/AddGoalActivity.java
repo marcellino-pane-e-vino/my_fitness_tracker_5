@@ -144,7 +144,7 @@ public class AddGoalActivity extends AppCompatActivity {
                         String date = document.getString("date");
                         String goal = "Sport: " + sport + ", Distance/Reps: " + distanceReps + ", Date: " + date;
                         goalsList.add(goal);
-                        goalIds.add(document.getId());  // Store the document ID
+                        goalIds.add(document.getId());
                     }
                     goalsAdapter.notifyDataSetChanged();
                 })

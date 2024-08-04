@@ -6,20 +6,30 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 
 public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.ViewHolder> {
 
-    private Context context;
-    private ArrayList<String> goalsList;
+    private final Context context;
+    private final ArrayList<String> goalsList;
+    private final ArrayList<String> goalIds;
+    private final FirebaseFirestore db;
+    private final FirebaseAuth mAuth;
 
-    public GoalAdapter(Context context, ArrayList<String> goalsList) {
+    public GoalAdapter(Context context, ArrayList<String> goalsList, ArrayList<String> goalIds, FirebaseFirestore db) {
         this.context = context;
         this.goalsList = goalsList;
+        this.goalIds = goalIds;
+        this.db = db;
+        this.mAuth = FirebaseAuth.getInstance();
     }
 
     @NonNull
@@ -34,9 +44,17 @@ public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.ViewHolder> {
         String goal = goalsList.get(position);
         holder.textViewGoal.setText(goal);
         holder.imageViewDelete.setOnClickListener(v -> {
-            goalsList.remove(position);
-            notifyItemRemoved(position);
-            // Optionally, save changes to persistent storage here
+            String goalId = goalIds.get(position);
+            db.collection("users").document(mAuth.getCurrentUser().getUid())
+                    .collection("goals").document(goalId)
+                    .delete()
+                    .addOnSuccessListener(aVoid -> {
+                        goalsList.remove(position);
+                        goalIds.remove(position);
+                        notifyItemRemoved(position);
+                        Toast.makeText(context, "Goal successfully deleted!", Toast.LENGTH_SHORT).show();
+                    })
+                    .addOnFailureListener(e -> Toast.makeText(context, "Error deleting goal", Toast.LENGTH_SHORT).show());
         });
     }
 

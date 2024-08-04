@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
@@ -20,8 +21,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 public class WorkoutAdapter extends ArrayAdapter<Workout> {
@@ -29,15 +28,17 @@ public class WorkoutAdapter extends ArrayAdapter<Workout> {
     private static final String TAG = "WorkoutAdapter";
     private final Context context;
     private final ArrayList<Workout> workoutsList;
+    private final ArrayList<String> workoutIds;
     private final FirebaseFirestore db;
     private final FirebaseAuth mAuth;
 
-    public WorkoutAdapter(Context context, ArrayList<Workout> workoutsList) {
+    public WorkoutAdapter(Context context, ArrayList<Workout> workoutsList, ArrayList<String> workoutIds, FirebaseFirestore db) {
         super(context, 0, workoutsList);
         this.context = context;
         this.workoutsList = workoutsList;
-        db = FirebaseFirestore.getInstance();
-        mAuth = FirebaseAuth.getInstance();
+        this.workoutIds = workoutIds;
+        this.db = db;
+        this.mAuth = FirebaseAuth.getInstance();
     }
 
     @NonNull
@@ -76,9 +77,18 @@ public class WorkoutAdapter extends ArrayAdapter<Workout> {
         }
 
         imageViewDelete.setOnClickListener(v -> {
-            workoutsList.remove(position);
-            notifyDataSetChanged();
-            saveWorkouts();
+            String workoutId = workoutIds.get(position);
+            db.collection("users").document(Objects.requireNonNull(mAuth.getCurrentUser()).getUid())
+                    .collection("workouts").document(workoutId)
+                    .delete()
+                    .addOnSuccessListener(aVoid -> {
+                        workoutsList.remove(position);
+                        workoutIds.remove(position);
+                        notifyDataSetChanged();
+                        Toast.makeText(context, "Workout successfully deleted!", Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "Workout successfully deleted!");
+                    })
+                    .addOnFailureListener(e -> Log.w(TAG, "Error deleting workout", e));
         });
 
         return convertView;
@@ -92,20 +102,6 @@ public class WorkoutAdapter extends ArrayAdapter<Workout> {
     private void showImagePreview(String imageBase64) {
         FragmentManager fragmentManager = ((FragmentActivity) context).getSupportFragmentManager();
         ImagePreviewDialogFragment.newInstance(imageBase64).show(fragmentManager, "image_preview");
-    }
-
-    private void saveWorkouts() {
-        String uid = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
-        for (Workout workout : workoutsList) {
-            Map<String, Object> workoutData = new HashMap<>();
-            workoutData.put("date", workout.getDate());
-            workoutData.put("description", workout.getDescription());
-            workoutData.put("photoBase64", workout.getPhotoBase64());
-
-            db.collection("users").document(uid).collection("workouts").add(workoutData)
-                    .addOnSuccessListener(documentReference -> Log.d(TAG, "Workout added with ID: " + documentReference.getId()))
-                    .addOnFailureListener(e -> Log.w(TAG, "Error adding workout", e));
-        }
     }
 
     // Utility method to validate Base64 string

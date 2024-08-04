@@ -332,8 +332,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
                         String date = document.getString("date");
                         String photoBase64 = document.getString("photoBase64");
                         String description = "Sport: " + sport + ", Distance/Reps: " + distanceReps;
-                        Workout workout = new Workout(uid, sport, distanceReps, date, description, photoBase64);
-                        workoutsList.add(workout);
+                        workoutsList.add(new Workout(uid, sport, distanceReps, date, description, photoBase64));
                         workoutIds.add(document.getId());
                     }
                     workoutsAdapter.notifyDataSetChanged();

@@ -5,10 +5,14 @@ import android.os.Bundle;
 import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -51,5 +55,9 @@ public class MainActivity extends AppCompatActivity {
         Button buttonSquatCounter = findViewById(R.id.button_squat_counter);
         buttonSquatCounter.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, SquatCounterActivity.class)));
 
+        // Schedule the GoalCheckWorker to run periodically
+        PeriodicWorkRequest goalCheckWorkRequest = new PeriodicWorkRequest.Builder(GoalCheckWorker.class, 24, TimeUnit.HOURS)
+                .build();
+        WorkManager.getInstance(this).enqueue(goalCheckWorkRequest);
     }
 }

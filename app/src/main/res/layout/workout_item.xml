@@ -10,20 +10,22 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="Workout Description" />
+        android:text="Workout"
+        android:textSize="16sp" />
 
     <ImageView
         android:id="@+id/imageView_photo"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:scaleType="centerCrop"
-        android:visibility="gone"
-        android:layout_marginEnd="8dp" />
+        android:layout_marginEnd="8dp"
+        android:visibility="gone" />
 
     <ImageView
         android:id="@+id/imageView_delete"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:src="@android:drawable/ic_delete"
-        android:contentDescription="Delete Workout" />
+        android:src="@android:drawable/ic_menu_delete"
+        android:contentDescription="Delete Workout"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="8dp" />
 </LinearLayout>
