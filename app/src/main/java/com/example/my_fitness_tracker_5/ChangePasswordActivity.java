@@ -1,5 +1,6 @@
 package com.example.my_fitness_tracker_5;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.Button;
@@ -7,10 +8,17 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+
+import android.view.MenuItem;
+import android.graphics.PorterDuff;
 
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
+
+import java.util.Objects;
 
 public class ChangePasswordActivity extends AppCompatActivity {
 
@@ -31,6 +39,12 @@ public class ChangePasswordActivity extends AppCompatActivity {
         buttonChangePassword = findViewById(R.id.buttonChangePassword);
         mAuth = FirebaseAuth.getInstance();
 
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle("Change Password");
+        Objects.requireNonNull(toolbar.getNavigationIcon()).setColorFilter(ContextCompat.getColor(this, android.R.color.white), PorterDuff.Mode.SRC_ATOP);
+
         buttonChangePassword.setOnClickListener(v -> {
             String oldPassword = editTextOldPassword.getText().toString().trim();
             String newPassword = editTextNewPassword.getText().toString().trim();
@@ -47,7 +61,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
             }
 
             FirebaseAuth auth = FirebaseAuth.getInstance();
-            String email = auth.getCurrentUser().getEmail();
+            String email = Objects.requireNonNull(auth.getCurrentUser()).getEmail();
 
             AuthCredential credential = EmailAuthProvider.getCredential(email, oldPassword);
             auth.getCurrentUser().reauthenticate(credential).addOnCompleteListener(task -> {
@@ -65,5 +79,15 @@ public class ChangePasswordActivity extends AppCompatActivity {
                 }
             });
         });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            startActivity(new Intent(ChangePasswordActivity.this, ProfileActivity.class));
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

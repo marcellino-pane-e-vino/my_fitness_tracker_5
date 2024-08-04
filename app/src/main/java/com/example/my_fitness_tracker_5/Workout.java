@@ -1,45 +1,91 @@
 package com.example.my_fitness_tracker_5;
 
-import androidx.annotation.NonNull;
-
 public class Workout {
+    private String uid;
+    private String date;
+    private String description;
+    private String photoBase64;
+    private String sport;
+    private String distanceReps;
 
-    private final String description;
-    private final String photoBase64;
-    private final String date;
+    // No-argument constructor
+    public Workout() {
+    }
 
-    public Workout(String description, String photoBase64, String date) {
+    // Constructor with arguments
+    public Workout(String uid, String sport, String distanceReps, String date, String description, String photoBase64) {
+        this.uid = uid;
+        this.date = date;
         this.description = description;
         this.photoBase64 = photoBase64;
-        this.date = date;
+        this.sport = sport;
+        this.distanceReps = distanceReps;
     }
 
     // Getters and setters
-
-    public String getDescription() {
-        return description;
+    public String getUid() {
+        return uid;
     }
 
-    public String getPhotoBase64() {
-        return photoBase64;
+    public void setUid(String uid) {
+        this.uid = uid;
     }
 
     public String getDate() {
         return date;
     }
 
-    @NonNull
-    @Override
-    public String toString() {
-        // Customize the format if needed
-        return description + ";;;" + photoBase64 + ";;;" + date;
+    public void setDate(String date) {
+        this.date = date;
     }
 
-    public static Workout fromString(String str) {
-        String[] parts = str.split(";;;");
-        if (parts.length == 3) {
-            return new Workout(parts[0], parts[1], parts[2]);
-        }
-        return null;
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getPhotoBase64() {
+        return photoBase64;
+    }
+
+    public void setPhotoBase64(String photoBase64) {
+        this.photoBase64 = photoBase64;
+    }
+
+    public String getSport() {
+        return sport;
+    }
+
+    public void setSport(String sport) {
+        this.sport = sport;
+    }
+
+    public String getDistanceReps() {
+        return distanceReps;
+    }
+
+    public void setDistanceReps(String distanceReps) {
+        this.distanceReps = distanceReps;
+    }
+
+    @Override
+    public String toString() {
+        return "Workout{" +
+                "uid='" + uid + '\'' +
+                ", date='" + date + '\'' +
+                ", description='" + description + '\'' +
+                ", photoBase64='" + photoBase64 + '\'' +
+                ", sport='" + sport + '\'' +
+                ", distanceReps='" + distanceReps + '\'' +
+                '}';
+    }
+
+    // Static method to parse Workout object from string if needed
+    public static Workout fromString(String workoutString) {
+        // Implement the method to parse workoutString and return a Workout object
+        return new Workout();
     }
 }

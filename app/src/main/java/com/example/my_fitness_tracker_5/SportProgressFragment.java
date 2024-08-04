@@ -1,9 +1,7 @@
 package com.example.my_fitness_tracker_5;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,12 +9,13 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.BarGraphSeries;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.DefaultLabelFormatter;
-
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -24,13 +23,13 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 public class SportProgressFragment extends Fragment {
 
     private static final String ARG_SPORT = "sport";
-
     private String sport;
+    private FirebaseFirestore db;
+    private FirebaseAuth mAuth;
 
     public static SportProgressFragment newInstance(String sport) {
         SportProgressFragment fragment = new SportProgressFragment();
@@ -46,6 +45,8 @@ public class SportProgressFragment extends Fragment {
         if (getArguments() != null) {
             sport = getArguments().getString(ARG_SPORT);
         }
+        db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
     }
 
     @Nullable
@@ -62,145 +63,106 @@ public class SportProgressFragment extends Fragment {
         TextView textMonthlyWorkouts = view.findViewById(R.id.text_monthly_workouts);
         TextView textYearlyWorkouts = view.findViewById(R.id.text_yearly_workouts);
 
-        Map<String, Integer> dailyWorkoutCount = getDailyWorkoutCountForCurrentWeek();
-        BarGraphSeries<DataPoint> series = new BarGraphSeries<>(getDataPoints(dailyWorkoutCount));
-        graphSportWorkouts.addSeries(series);
-
-        // Customize the graph
-        graphSportWorkouts.setTitle("Workouts This Week");
-        graphSportWorkouts.getGridLabelRenderer().setHorizontalAxisTitle("Day");
-
-        // Adjust viewport to show all seven days
-        graphSportWorkouts.getViewport().setMinX(1);
-        graphSportWorkouts.getViewport().setMaxX(7);
-        graphSportWorkouts.getViewport().setXAxisBoundsManual(true);
-        graphSportWorkouts.getGridLabelRenderer().setNumHorizontalLabels(7);
-
-        // Adjust bar width and spacing
-        series.setSpacing(5); // Adjust spacing between bars if needed
-        series.setDataWidth(0.2); // Set the width of each bar
-
-        // Ensure the graph fits within the screen
-        graphSportWorkouts.getViewport().setScrollable(false);
-        graphSportWorkouts.getViewport().setScalable(false);
-        graphSportWorkouts.getViewport().setScrollableY(false);
-        graphSportWorkouts.getViewport().setScalableY(false);
-
-        // Custom label formatter to show day names
-        graphSportWorkouts.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter() {
-            @Override
-            public String formatLabel(double value, boolean isValueX) {
-                if (isValueX) {
-                    String[] daysOfWeek = {"Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"};
-                    int dayIndex = (int) value - 1;
-                    if (dayIndex >= 0 && dayIndex < daysOfWeek.length) {
-                        return daysOfWeek[dayIndex];
-                    }
-                }
-                return super.formatLabel(value, isValueX);
-            }
-        });
-
-        // Set the number of vertical labels to integer values
-        graphSportWorkouts.getGridLabelRenderer().setNumVerticalLabels(5); // Adjust this as needed
-
-        // Display additional statistics
-        displayStatistics(textTotalWorkouts, textWeeklyWorkouts, textMonthlyWorkouts, textYearlyWorkouts);
+        // Fetch data from Firestore and display it
+        fetchWorkoutDataAndDisplay(graphSportWorkouts, textTotalWorkouts, textWeeklyWorkouts, textMonthlyWorkouts, textYearlyWorkouts);
 
         return view;
     }
 
-    @SuppressLint("SetTextI18n")
-    private void displayStatistics(TextView textTotalWorkouts, TextView textWeeklyWorkouts, TextView textMonthlyWorkouts, TextView textYearlyWorkouts) {
-        SharedPreferences sharedPreferences = requireActivity().getSharedPreferences(ViewProgressActivity.SHARED_PREFS, Context.MODE_PRIVATE);
-        Set<String> workoutsSet = sharedPreferences.getStringSet(ViewProgressActivity.WORKOUTS_KEY, null);
+    private void fetchWorkoutDataAndDisplay(GraphView graphSportWorkouts, TextView textTotalWorkouts, TextView textWeeklyWorkouts, TextView textMonthlyWorkouts, TextView textYearlyWorkouts) {
+        String uid = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
+        db.collection("users").document(uid).collection("workouts")
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Map<String, Integer> dailyWorkoutCount = new HashMap<>();
+                        int totalWorkouts = 0;
+                        int weeklyWorkouts = 0;
+                        int monthlyWorkouts = 0;
+                        int yearlyWorkouts = 0;
 
-        if (workoutsSet != null) {
-            Calendar calendar = Calendar.getInstance();
-            int currentWeek = calendar.get(Calendar.WEEK_OF_YEAR);
-            int currentMonth = calendar.get(Calendar.MONTH);
-            int currentYear = calendar.get(Calendar.YEAR);
+                        Calendar calendar = Calendar.getInstance();
+                        int currentWeek = calendar.get(Calendar.WEEK_OF_YEAR);
+                        int currentMonth = calendar.get(Calendar.MONTH);
+                        int currentYear = calendar.get(Calendar.YEAR);
 
-            int totalWorkouts = 0;
-            int weeklyWorkouts = 0;
-            int monthlyWorkouts = 0;
-            int yearlyWorkouts = 0;
+                        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                        SimpleDateFormat dayFormat = new SimpleDateFormat("u", Locale.getDefault()); // Day of the week (1 = Monday, ..., 7 = Sunday)
 
-            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            Workout workout = document.toObject(Workout.class);
+                            Log.d("SportProgressFragment", "Fetched workout: " + workout.toString());
+                            if (workout != null && (sport.equals("General") || (workout.getSport() != null && workout.getSport().equalsIgnoreCase(sport)))) {
+                                try {
+                                    Date workoutDate = dateFormat.parse(workout.getDate());
+                                    assert workoutDate != null;
+                                    calendar.setTime(workoutDate);
 
-            for (String workoutString : workoutsSet) {
-                Workout workout = Workout.fromString(workoutString);
-                if (workout != null && (sport.equals("General") || workout.getDescription().contains(sport))) {
-                    try {
-                        Date workoutDate = dateFormat.parse(workout.getDate());
-                        assert workoutDate != null;
-                        calendar.setTime(workoutDate);
+                                    totalWorkouts++;
 
-                        totalWorkouts++;
+                                    int workoutWeek = calendar.get(Calendar.WEEK_OF_YEAR);
+                                    int workoutMonth = calendar.get(Calendar.MONTH);
+                                    int workoutYear = calendar.get(Calendar.YEAR);
 
-                        int workoutWeek = calendar.get(Calendar.WEEK_OF_YEAR);
-                        int workoutMonth = calendar.get(Calendar.MONTH);
-                        int workoutYear = calendar.get(Calendar.YEAR);
+                                    if (workoutWeek == currentWeek && workoutYear == currentYear) {
+                                        weeklyWorkouts++;
+                                    }
 
-                        if (workoutWeek == currentWeek && workoutYear == currentYear) {
-                            weeklyWorkouts++;
+                                    if (workoutMonth == currentMonth && workoutYear == currentYear) {
+                                        monthlyWorkouts++;
+                                    }
+
+                                    if (workoutYear == currentYear) {
+                                        yearlyWorkouts++;
+                                    }
+
+                                    String day = dayFormat.format(workoutDate);
+                                    dailyWorkoutCount.put(day, dailyWorkoutCount.getOrDefault(day, 0) + 1);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
                         }
 
-                        if (workoutMonth == currentMonth && workoutYear == currentYear) {
-                            monthlyWorkouts++;
-                        }
+                        // Update graph and statistics
+                        BarGraphSeries<DataPoint> series = new BarGraphSeries<>(getDataPoints(dailyWorkoutCount));
+                        graphSportWorkouts.addSeries(series);
 
-                        if (workoutYear == currentYear) {
-                            yearlyWorkouts++;
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                        graphSportWorkouts.setTitle("Workouts This Week");
+                        graphSportWorkouts.getGridLabelRenderer().setHorizontalAxisTitle("Day");
+                        graphSportWorkouts.getViewport().setMinX(1);
+                        graphSportWorkouts.getViewport().setMaxX(7);
+                        graphSportWorkouts.getViewport().setXAxisBoundsManual(true);
+                        graphSportWorkouts.getGridLabelRenderer().setNumHorizontalLabels(7);
+                        series.setSpacing(5); // Adjust spacing between bars if needed
+                        series.setDataWidth(0.2); // Set the width of each bar
+                        graphSportWorkouts.getViewport().setScrollable(false);
+                        graphSportWorkouts.getViewport().setScalable(false);
+                        graphSportWorkouts.getViewport().setScrollableY(false);
+                        graphSportWorkouts.getViewport().setScalableY(false);
+
+                        graphSportWorkouts.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter() {
+                            @Override
+                            public String formatLabel(double value, boolean isValueX) {
+                                if (isValueX) {
+                                    String[] daysOfWeek = {"Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"};
+                                    int dayIndex = (int) value - 1;
+                                    if (dayIndex >= 0 && dayIndex < daysOfWeek.length) {
+                                        return daysOfWeek[dayIndex];
+                                    }
+                                }
+                                return super.formatLabel(value, isValueX);
+                            }
+                        });
+
+                        textTotalWorkouts.setText("Total Workouts: " + totalWorkouts);
+                        textWeeklyWorkouts.setText("Workouts This Week: " + weeklyWorkouts);
+                        textMonthlyWorkouts.setText("Workouts This Month: " + monthlyWorkouts);
+                        textYearlyWorkouts.setText("Workouts This Year: " + yearlyWorkouts);
+                    } else {
+                        Log.e("SportProgressFragment", "Error fetching workouts: ", task.getException());
                     }
-                }
-            }
-
-            textTotalWorkouts.setText("Total Workouts: " + totalWorkouts);
-            textWeeklyWorkouts.setText("Workouts This Week: " + weeklyWorkouts);
-            textMonthlyWorkouts.setText("Workouts This Month: " + monthlyWorkouts);
-            textYearlyWorkouts.setText("Workouts This Year: " + yearlyWorkouts);
-        }
-    }
-
-    private Map<String, Integer> getDailyWorkoutCountForCurrentWeek() {
-        getActivity();
-        SharedPreferences sharedPreferences = requireActivity().getSharedPreferences(ViewProgressActivity.SHARED_PREFS, Context.MODE_PRIVATE);
-        Set<String> workoutsSet = sharedPreferences.getStringSet(ViewProgressActivity.WORKOUTS_KEY, null);
-
-        Map<String, Integer> dailyWorkoutCount = new HashMap<>();
-        if (workoutsSet != null) {
-            Calendar calendar = Calendar.getInstance();
-            int currentWeek = calendar.get(Calendar.WEEK_OF_YEAR);
-            int currentYear = calendar.get(Calendar.YEAR);
-
-            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-            SimpleDateFormat dayFormat = new SimpleDateFormat("u", Locale.getDefault()); // Day of the week (1 = Monday, ..., 7 = Sunday)
-
-            for (String workoutString : workoutsSet) {
-                Workout workout = Workout.fromString(workoutString);
-                if (workout != null && (sport.equals("General") || workout.getDescription().contains(sport))) {
-                    try {
-                        Date workoutDate = dateFormat.parse(workout.getDate());
-                        assert workoutDate != null;
-                        calendar.setTime(workoutDate);
-                        int workoutWeek = calendar.get(Calendar.WEEK_OF_YEAR);
-                        int workoutYear = calendar.get(Calendar.YEAR);
-
-                        if (workoutWeek == currentWeek && workoutYear == currentYear) {
-                            String day = dayFormat.format(workoutDate);
-                            dailyWorkoutCount.put(day, dailyWorkoutCount.getOrDefault(day, 0) + 1);
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-        return dailyWorkoutCount;
+                });
     }
 
     private DataPoint[] getDataPoints(Map<String, Integer> dailyWorkoutCount) {

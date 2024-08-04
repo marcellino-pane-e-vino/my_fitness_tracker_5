@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -117,7 +118,8 @@ public class AddWorkoutActivity extends AppCompatActivity {
                 currentPhotoBase64 = null; // Reset the current photo if invalid
             }
 
-            Workout workout = new Workout(workoutDescription, currentPhotoBase64, selectedDate);
+            String uid = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
+            Workout workout = new Workout(uid, sport, distanceReps, selectedDate, workoutDescription, currentPhotoBase64);
             workoutsList.add(workout);
             workoutsAdapter.notifyDataSetChanged();
 
@@ -148,6 +150,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Add a Workout");
+        Objects.requireNonNull(toolbar.getNavigationIcon()).setColorFilter(ContextCompat.getColor(this, android.R.color.white), PorterDuff.Mode.SRC_ATOP);
 
         workoutsList = new ArrayList<>();
         workoutsAdapter = new WorkoutAdapter(this, workoutsList);
@@ -313,7 +316,8 @@ public class AddWorkoutActivity extends AppCompatActivity {
                         String distanceReps = document.getString("distanceReps");
                         String date = document.getString("date");
                         String photoBase64 = document.getString("photoBase64");
-                        workoutsList.add(new Workout(sport + ", " + distanceReps, photoBase64, date));
+                        String description = "Sport: " + sport + ", Distance/Reps: " + distanceReps;
+                        workoutsList.add(new Workout(uid, sport, distanceReps, date, description, photoBase64));
                     }
                     workoutsAdapter.notifyDataSetChanged();
                     setListViewHeightBasedOnChildren(listViewWorkouts);

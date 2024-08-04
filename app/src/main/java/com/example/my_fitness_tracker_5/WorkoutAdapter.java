@@ -1,7 +1,6 @@
 package com.example.my_fitness_tracker_5;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
@@ -17,20 +16,28 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 public class WorkoutAdapter extends ArrayAdapter<Workout> {
 
     private static final String TAG = "WorkoutAdapter";
     private final Context context;
     private final ArrayList<Workout> workoutsList;
+    private final FirebaseFirestore db;
+    private final FirebaseAuth mAuth;
 
     public WorkoutAdapter(Context context, ArrayList<Workout> workoutsList) {
         super(context, 0, workoutsList);
         this.context = context;
         this.workoutsList = workoutsList;
+        db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
     }
 
     @NonNull
@@ -88,14 +95,17 @@ public class WorkoutAdapter extends ArrayAdapter<Workout> {
     }
 
     private void saveWorkouts() {
-        SharedPreferences sharedPreferences = context.getSharedPreferences("sharedPrefs", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        Set<String> workoutsSet = new HashSet<>();
+        String uid = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         for (Workout workout : workoutsList) {
-            workoutsSet.add(workout.toString());
+            Map<String, Object> workoutData = new HashMap<>();
+            workoutData.put("date", workout.getDate());
+            workoutData.put("description", workout.getDescription());
+            workoutData.put("photoBase64", workout.getPhotoBase64());
+
+            db.collection("users").document(uid).collection("workouts").add(workoutData)
+                    .addOnSuccessListener(documentReference -> Log.d(TAG, "Workout added with ID: " + documentReference.getId()))
+                    .addOnFailureListener(e -> Log.w(TAG, "Error adding workout", e));
         }
-        editor.putStringSet("workouts", workoutsSet);
-        editor.apply();
     }
 
     // Utility method to validate Base64 string
