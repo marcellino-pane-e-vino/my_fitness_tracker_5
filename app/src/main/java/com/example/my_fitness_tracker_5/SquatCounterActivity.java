@@ -11,12 +11,13 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -82,13 +83,13 @@ public class SquatCounterActivity extends AppCompatActivity implements SensorEve
         isCounting = false;
         sensorManager.unregisterListener(this);
         textSquatCount.setText("Squats: " + squatCount);
+        saveWorkoutToFirestore();
+    }
 
-        // Create a new Workout entry with current date and squat count
+    private void saveWorkoutToFirestore() {
         String uid = mAuth.getCurrentUser().getUid();
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         String date = dateFormat.format(new Date());
-
-        // Add description and photoBase64 if needed
         String description = "Squat workout";
         String photoBase64 = ""; // Add logic to capture or attach a photo if needed
 
@@ -96,13 +97,16 @@ public class SquatCounterActivity extends AppCompatActivity implements SensorEve
 
         db.collection("users").document(uid).collection("workouts").add(workout)
                 .addOnSuccessListener(documentReference -> {
-                    Toast.makeText(SquatCounterActivity.this, "Workout added", Toast.LENGTH_SHORT).show();
-                    // Navigate back to the progress view page
+                    // Handle success
+                    Toast.makeText(SquatCounterActivity.this, "Workout saved", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(SquatCounterActivity.this, MainActivity.class);
                     startActivity(intent);
-                    finish();
+                    finish(); // Go back to the previous activity
                 })
-                .addOnFailureListener(e -> Toast.makeText(SquatCounterActivity.this, "Failed to add workout", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {
+                    // Handle failure
+                    Toast.makeText(SquatCounterActivity.this, "Failed to save workout", Toast.LENGTH_SHORT).show();
+                });
     }
 
     @Override

@@ -1,18 +1,16 @@
 package com.example.my_fitness_tracker_5;
 
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.viewpager2.widget.ViewPager2;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 public class ViewProgressActivity extends AppCompatActivity {
-
-    public static final String SHARED_PREFS = "sharedPrefs";
-    public static final String WORKOUTS_KEY = "workouts";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +21,7 @@ public class ViewProgressActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("View Progress");
+        Objects.requireNonNull(toolbar.getNavigationIcon()).setColorFilter(ContextCompat.getColor(this, android.R.color.white), PorterDuff.Mode.SRC_ATOP);
 
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
