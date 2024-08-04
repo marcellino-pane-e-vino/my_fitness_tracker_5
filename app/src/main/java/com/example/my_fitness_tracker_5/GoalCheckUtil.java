@@ -5,6 +5,7 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.os.Build;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
 
@@ -39,23 +40,19 @@ public class GoalCheckUtil {
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
                         String goalDistanceReps = document.getString("distanceReps");
-                        String goalStartDate = document.getString("startDate");
-                        String goalExpiryDateStr = document.getString("expiryDate");
-
-                        if (goalDistanceReps != null && goalStartDate != null && goalExpiryDateStr != null && distance >= Double.parseDouble(goalDistanceReps)) {
+                        String goalDate = document.getString("expiryDate");
+                        if (goalDistanceReps != null && goalDate != null && distance >= Double.parseDouble(goalDistanceReps)) {
+                            // Check if the goal is within the expiry date
                             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
                             try {
-                                Date goalStart = sdf.parse(goalStartDate);
-                                Date goalExpiry = sdf.parse(goalExpiryDateStr);
-
-                                if (goalStart != null && goalExpiry != null) {
-                                    if (goalStart.before(new Date()) && goalExpiry.after(new Date())) {
-                                        sendNotification("Goal Achieved", "You have reached your goal: " + document.getString("sport") + ", " + document.getString("distanceReps") + " " + document.getString("expiryDate"));
-                                        db.collection("users").document(uid).collection("goals").document(document.getId()).delete();
-                                    }
+                                Date goalExpiryDate = sdf.parse(goalDate);
+                                if (goalExpiryDate != null && goalExpiryDate.after(new Date())) {
+                                    sendNotification("Goal Achieved", "You have reached your goal: " + document.getString("sport") + ", " + document.getString("distanceReps") + " " + document.getString("expiryDate"));
+                                    sendToast("Goal Achieved: " + document.getString("sport") + ", " + document.getString("distanceReps"));
+                                    db.collection("users").document(uid).collection("goals").document(document.getId()).delete();
                                 }
                             } catch (ParseException e) {
-                                Log.e("GoalCheckUtil", "Failed to parse goal dates", e);
+                                Log.e("GoalCheckUtil", "Failed to parse goal date", e);
                             }
                         }
                     }
@@ -75,6 +72,10 @@ public class GoalCheckUtil {
         notificationManager.notify(1, builder.build());
     }
 
+    private void sendToast(String message) {
+        Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+    }
+
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = "Goal Notification";
@@ -83,7 +84,7 @@ public class GoalCheckUtil {
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
             channel.setDescription(description);
 
-            NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            NotificationManager notificationManager = (NotificationManager) context.getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
     }

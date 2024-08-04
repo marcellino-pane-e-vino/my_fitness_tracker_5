@@ -37,6 +37,7 @@ public class AddGoalActivity extends AppCompatActivity {
     private TextView textViewSelectedDate;
     private GoalAdapter goalsAdapter;
     private ArrayList<String> goalsList;
+    private ArrayList<String> goalIds;
 
     private String selectedStartDate;
     private String selectedExpiryDate;
@@ -70,7 +71,8 @@ public class AddGoalActivity extends AppCompatActivity {
         Objects.requireNonNull(toolbar.getNavigationIcon()).setColorFilter(ContextCompat.getColor(this, android.R.color.white), PorterDuff.Mode.SRC_ATOP);
 
         goalsList = new ArrayList<>();
-        goalsAdapter = new GoalAdapter(this, goalsList);
+        goalIds = new ArrayList<>();
+        goalsAdapter = new GoalAdapter(this, goalsList, goalIds);
         recyclerViewGoals.setLayoutManager(new LinearLayoutManager(this));
         recyclerViewGoals.setAdapter(goalsAdapter);
 
@@ -92,6 +94,7 @@ public class AddGoalActivity extends AppCompatActivity {
             String goal = "Sport: " + sport + ", Distance/Reps: " + distanceReps + ", Start Date: " + selectedStartDate + ", Expiry Date: " + selectedExpiryDate;
 
             goalsList.add(goal);
+            goalIds.add(null); // Placeholder for the ID that will be added later
             goalsAdapter.notifyDataSetChanged();
 
             saveGoalToFirestore(sport, distanceReps, selectedStartDate, selectedExpiryDate);
@@ -130,7 +133,11 @@ public class AddGoalActivity extends AppCompatActivity {
         goal.put("expiryDate", expiryDate);
 
         db.collection("users").document(uid).collection("goals").add(goal)
-                .addOnSuccessListener(documentReference -> Toast.makeText(AddGoalActivity.this, "Goal added", Toast.LENGTH_SHORT).show())
+                .addOnSuccessListener(documentReference -> {
+                    Toast.makeText(AddGoalActivity.this, "Goal added", Toast.LENGTH_SHORT).show();
+                    int index = goalsList.size() - 1;
+                    goalIds.set(index, documentReference.getId());
+                })
                 .addOnFailureListener(e -> Toast.makeText(AddGoalActivity.this, "Failed to add goal", Toast.LENGTH_SHORT).show());
     }
 
@@ -139,6 +146,7 @@ public class AddGoalActivity extends AppCompatActivity {
         db.collection("users").document(uid).collection("goals").get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     goalsList.clear();
+                    goalIds.clear();
                     for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
                         String sport = document.getString("sport");
                         String distanceReps = document.getString("distanceReps");
@@ -146,6 +154,7 @@ public class AddGoalActivity extends AppCompatActivity {
                         String expiryDate = document.getString("expiryDate");
                         String goal = "Sport: " + sport + ", Distance/Reps: " + distanceReps + ", Start Date: " + startDate + ", Expiry Date: " + expiryDate;
                         goalsList.add(goal);
+                        goalIds.add(document.getId());
                     }
                     goalsAdapter.notifyDataSetChanged();
                 })

@@ -1,6 +1,12 @@
 package com.example.my_fitness_tracker_5;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
+import android.os.Build;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +16,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.TaskStackBuilder;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -17,19 +25,22 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.ViewHolder> {
 
+    private static final String CHANNEL_ID = "goal_notification_channel";
+    private static final String TAG = "GoalAdapter";
     private Context context;
     private ArrayList<String> goalsList;
+    private ArrayList<String> goalIds; // Initialize goalIds in constructor
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
 
-    public GoalAdapter(Context context, ArrayList<String> goalsList) {
+    public GoalAdapter(Context context, ArrayList<String> goalsList, ArrayList<String> goalIds) {
         this.context = context;
         this.goalsList = goalsList;
+        this.goalIds = goalIds; // Initialize goalIds
+        createNotificationChannel();
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
     }
@@ -52,13 +63,9 @@ public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.ViewHolder> {
         String distanceRepsStr = goalParts[1].split(": ")[1];
         double distanceReps = Double.parseDouble(distanceRepsStr);
 
-        calculateProgress(sport, distanceReps, holder.progressBar);
+        calculateProgress(sport, distanceReps, holder.progressBar, position);
 
-        holder.imageViewDelete.setOnClickListener(v -> {
-            goalsList.remove(position);
-            notifyItemRemoved(position);
-            deleteGoalFromFirestore(goal);
-        });
+        holder.imageViewDelete.setOnClickListener(v -> deleteGoalFromFirestore(position));
     }
 
     @Override
@@ -66,7 +73,7 @@ public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.ViewHolder> {
         return goalsList.size();
     }
 
-    private void calculateProgress(String sport, double goalDistanceReps, ProgressBar progressBar) {
+    private void calculateProgress(String sport, double goalDistanceReps, ProgressBar progressBar, int position) {
         String uid = mAuth.getCurrentUser().getUid();
         db.collection("users").document(uid).collection("workouts")
                 .whereEqualTo("sport", sport)
@@ -81,23 +88,27 @@ public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.ViewHolder> {
                     }
                     int progress = (int) ((totalDistanceReps / goalDistanceReps) * 100);
                     progressBar.setProgress(progress);
+
+                    if (progress >= 100) {
+//                        sendNotification("Goal Achieved", "You have reached your goal: " + goalsList.get(position));
+                        sendToast("Goal Achieved: " + goalsList.get(position));
+//                        deleteGoalFromFirestore(position);
+                    }
                 })
                 .addOnFailureListener(e -> Toast.makeText(context, "Failed to calculate progress", Toast.LENGTH_SHORT).show());
     }
 
-    private void deleteGoalFromFirestore(String goal) {
+    private void deleteGoalFromFirestore(int position) {
         String uid = mAuth.getCurrentUser().getUid();
-        db.collection("users").document(uid).collection("goals")
-                .whereEqualTo("goal", goal)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
-                        db.collection("users").document(uid).collection("goals").document(document.getId()).delete()
-                                .addOnSuccessListener(aVoid -> Toast.makeText(context, "Goal deleted", Toast.LENGTH_SHORT).show())
-                                .addOnFailureListener(e -> Toast.makeText(context, "Failed to delete goal", Toast.LENGTH_SHORT).show());
-                    }
+        String goalId = goalIds.get(position);
+        db.collection("users").document(uid).collection("goals").document(goalId).delete()
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(context, "Goal deleted", Toast.LENGTH_SHORT).show();
+                    goalsList.remove(position);
+                    goalIds.remove(position);
+                    notifyDataSetChanged();
                 })
-                .addOnFailureListener(e -> Toast.makeText(context, "Failed to find goal", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> Toast.makeText(context, "Failed to delete goal", Toast.LENGTH_SHORT).show());
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -110,6 +121,51 @@ public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.ViewHolder> {
             textViewGoal = itemView.findViewById(R.id.textView_goal);
             imageViewDelete = itemView.findViewById(R.id.imageView_delete);
             progressBar = itemView.findViewById(R.id.progressBar);
+        }
+    }
+
+    private void sendNotification(String title, String message) {
+        Intent intent = new Intent(context, MainActivity.class);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+        stackBuilder.addNextIntentWithParentStack(intent);
+        PendingIntent pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context.getApplicationContext(), CHANNEL_ID)
+                .setSmallIcon(R.drawable.baseline_check_circle_24)
+                .setContentTitle(title)
+                .setContentText(message)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent);
+
+        NotificationManager notificationManager = (NotificationManager) context.getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+        if (notificationManager != null) {
+            notificationManager.notify((int) System.currentTimeMillis(), builder.build());
+            Log.d(TAG, "Notification sent: " + message);
+        } else {
+            Log.e(TAG, "NotificationManager is null");
+        }
+    }
+
+    private void sendToast(String message) {
+        Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "Goal Notification";
+            String description = "Channel for goal notifications";
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+
+            NotificationManager notificationManager = (NotificationManager) context.getSystemService(NotificationManager.class);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(channel);
+                Log.d(TAG, "Notification channel created");
+            } else {
+                Log.e(TAG, "Failed to create notification channel");
+            }
         }
     }
 }

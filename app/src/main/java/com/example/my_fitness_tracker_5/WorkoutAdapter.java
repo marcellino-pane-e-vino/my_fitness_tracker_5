@@ -21,6 +21,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class WorkoutAdapter extends ArrayAdapter<Workout> {
@@ -38,7 +40,7 @@ public class WorkoutAdapter extends ArrayAdapter<Workout> {
         this.workoutsList = workoutsList;
         this.workoutIds = workoutIds;
         this.db = db;
-        this.mAuth = FirebaseAuth.getInstance();
+        mAuth = FirebaseAuth.getInstance();
     }
 
     @NonNull
@@ -77,21 +79,23 @@ public class WorkoutAdapter extends ArrayAdapter<Workout> {
         }
 
         imageViewDelete.setOnClickListener(v -> {
-            String workoutId = workoutIds.get(position);
-            db.collection("users").document(Objects.requireNonNull(mAuth.getCurrentUser()).getUid())
-                    .collection("workouts").document(workoutId)
-                    .delete()
-                    .addOnSuccessListener(aVoid -> {
-                        workoutsList.remove(position);
-                        workoutIds.remove(position);
-                        notifyDataSetChanged();
-                        Toast.makeText(context, "Workout successfully deleted!", Toast.LENGTH_SHORT).show();
-                        Log.d(TAG, "Workout successfully deleted!");
-                    })
-                    .addOnFailureListener(e -> Log.w(TAG, "Error deleting workout", e));
+            deleteWorkoutFromFirestore(position);
         });
 
         return convertView;
+    }
+
+    private void deleteWorkoutFromFirestore(int position) {
+        String uid = mAuth.getCurrentUser().getUid();
+        String workoutId = workoutIds.get(position);
+        db.collection("users").document(uid).collection("workouts").document(workoutId).delete()
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(context, "Workout deleted", Toast.LENGTH_SHORT).show();
+                    workoutsList.remove(position);
+                    workoutIds.remove(position);
+                    notifyDataSetChanged();
+                })
+                .addOnFailureListener(e -> Toast.makeText(context, "Failed to delete workout", Toast.LENGTH_SHORT).show());
     }
 
     private Bitmap decodeBase64(String input) {
