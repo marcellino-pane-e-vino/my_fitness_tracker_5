@@ -35,6 +35,8 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.FragmentManager;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -60,6 +62,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
     private ListView listViewWorkouts;
     private WorkoutAdapter workoutsAdapter;
     private ArrayList<Workout> workoutsList;
+    private ArrayList<String> workoutIds;
     private String currentPhotoBase64;
     private ImageView imageViewPhotoPreview;
     private Button buttonSelectDate;
@@ -79,6 +82,8 @@ public class AddWorkoutActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
 
+    private GoalCheckUtil goalCheckUtil;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,6 +93,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
 
         context = this;
+        goalCheckUtil = new GoalCheckUtil(context);
         initializeUIElements();
         setupActivityResultLaunchers();
         loadWorkouts();
@@ -153,7 +159,8 @@ public class AddWorkoutActivity extends AppCompatActivity {
         Objects.requireNonNull(toolbar.getNavigationIcon()).setColorFilter(ContextCompat.getColor(this, android.R.color.white), PorterDuff.Mode.SRC_ATOP);
 
         workoutsList = new ArrayList<>();
-        workoutsAdapter = new WorkoutAdapter(this, workoutsList);
+        workoutIds = new ArrayList<>();
+        workoutsAdapter = new WorkoutAdapter(this, workoutsList, workoutIds, db);
         listViewWorkouts.setAdapter(workoutsAdapter);
     }
 
@@ -302,7 +309,14 @@ public class AddWorkoutActivity extends AppCompatActivity {
         workout.put("photoBase64", photoBase64);
 
         db.collection("users").document(uid).collection("workouts").add(workout)
-                .addOnSuccessListener(documentReference -> Toast.makeText(AddWorkoutActivity.this, "Workout added", Toast.LENGTH_SHORT).show())
+                .addOnSuccessListener(documentReference -> {
+                    Toast.makeText(AddWorkoutActivity.this, "Workout added", Toast.LENGTH_SHORT).show();
+                    goalCheckUtil.checkGoalCompletion(sport, Double.parseDouble(distanceReps));
+                    // Schedule the GoalCheckWorker
+                    OneTimeWorkRequest goalCheckWorkRequest = new OneTimeWorkRequest.Builder(GoalCheckWorker.class)
+                            .build();
+                    WorkManager.getInstance(context).enqueue(goalCheckWorkRequest);
+                })
                 .addOnFailureListener(e -> Toast.makeText(AddWorkoutActivity.this, "Failed to add workout", Toast.LENGTH_SHORT).show());
     }
 
@@ -311,13 +325,16 @@ public class AddWorkoutActivity extends AppCompatActivity {
         db.collection("users").document(uid).collection("workouts").get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     workoutsList.clear();
+                    workoutIds.clear();
                     for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
                         String sport = document.getString("sport");
                         String distanceReps = document.getString("distanceReps");
                         String date = document.getString("date");
                         String photoBase64 = document.getString("photoBase64");
                         String description = "Sport: " + sport + ", Distance/Reps: " + distanceReps;
-                        workoutsList.add(new Workout(uid, sport, distanceReps, date, description, photoBase64));
+                        Workout workout = new Workout(uid, sport, distanceReps, date, description, photoBase64);
+                        workoutsList.add(workout);
+                        workoutIds.add(document.getId());
                     }
                     workoutsAdapter.notifyDataSetChanged();
                     setListViewHeightBasedOnChildren(listViewWorkouts);
