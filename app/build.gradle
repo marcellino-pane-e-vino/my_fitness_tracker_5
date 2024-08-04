@@ -42,6 +42,8 @@ dependencies {
     implementation libs.viewpager2
     implementation libs.firebase.auth
     implementation libs.firebase.firestore
+    implementation libs.material.v121
+
 }
 
 apply plugin: 'com.google.gms.google-services'

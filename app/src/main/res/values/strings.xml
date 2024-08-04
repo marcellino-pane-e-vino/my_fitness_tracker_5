@@ -10,6 +10,14 @@
     <string name="login">Login</string>
     <string name="register">Register</string>
     <string name="email">Email</string>
+    <string name="profile">Profile</string>
+    <string name="logout">Logout</string>
+    <string name="change_picture">Change Picture</string>
+    <string name="change_password">Change Password</string>
+    <string name="profile_picture">profile picture</string>
+    <string name="old_password">Old Password</string>
+    <string name="new_password">New Password</string>
+    <string name="confirm_new_password">Confirm New Password</string>
     <string-array name="sports_array">
         <item>Run</item>
         <item>Walk</item>

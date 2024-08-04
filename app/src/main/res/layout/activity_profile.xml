@@ -17,39 +17,56 @@
         android:id="@+id/textViewProfile"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Profile"
+        android:text="@string/profile"
         android:layout_below="@id/toolbar"
         android:layout_marginTop="16dp"
         android:layout_centerHorizontal="true"
         android:textSize="24sp"
         android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/textViewName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Name: John Doe"
+    <ImageView
+        android:id="@+id/imageViewProfilePicture"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
         android:layout_below="@id/textViewProfile"
         android:layout_marginTop="16dp"
         android:layout_centerHorizontal="true"
-        android:textSize="18sp" />
+        android:contentDescription="@string/profile_picture"
+        android:src="@drawable/ic_android_black_24dp" />
+
+    <Button
+        android:id="@+id/buttonChangePicture"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/change_picture"
+        android:layout_below="@id/imageViewProfilePicture"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="8dp" />
 
     <TextView
         android:id="@+id/textViewEmail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Email: johndoe@example.com"
-        android:layout_below="@id/textViewName"
-        android:layout_marginTop="8dp"
+        android:layout_below="@id/buttonChangePicture"
+        android:layout_marginTop="16dp"
         android:layout_centerHorizontal="true"
         android:textSize="18sp" />
+
+    <Button
+        android:id="@+id/buttonChangePassword"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/change_password"
+        android:layout_below="@id/textViewEmail"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp" />
 
     <Button
         android:id="@+id/buttonLogout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Logout"
-        android:layout_below="@id/textViewEmail"
+        android:text="@string/logout"
+        android:layout_below="@id/buttonChangePassword"
         android:layout_margin="16dp"
         android:layout_centerHorizontal="true" />
 </RelativeLayout>

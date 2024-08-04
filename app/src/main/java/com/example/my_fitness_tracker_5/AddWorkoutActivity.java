@@ -1,12 +1,10 @@
 package com.example.my_fitness_tracker_5;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -37,6 +35,10 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.FragmentManager;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -44,16 +46,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 public class AddWorkoutActivity extends AppCompatActivity {
-
-    private static final String SHARED_PREFS = "sharedPrefs";
-    private static final String WORKOUTS_KEY = "workouts";
-    private static final String TAG = "AddWorkoutActivity";
 
     private Spinner spinnerSport;
     private EditText editTextDistanceReps;
@@ -64,6 +62,9 @@ public class AddWorkoutActivity extends AppCompatActivity {
     private String currentPhotoBase64;
     private ImageView imageViewPhotoPreview;
     private Button buttonSelectDate;
+    private Button buttonUploadPhoto;
+    private Button buttonTakePhoto;
+    private Button buttonConfirmWorkout;
 
     private Context context;
 
@@ -74,19 +75,72 @@ public class AddWorkoutActivity extends AppCompatActivity {
     private String currentPhotoPath;
     private String selectedDate;
 
+    private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_workout);
 
+        mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+
         context = this;
+        initializeUIElements();
+        setupActivityResultLaunchers();
+        loadWorkouts();
+
+        buttonSelectDate.setOnClickListener(v -> showDatePickerDialog());
+        buttonUploadPhoto.setOnClickListener(v -> openGallery());
+        buttonTakePhoto.setOnClickListener(v -> {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissionLauncher.launch(Manifest.permission.CAMERA);
+            } else {
+                openCamera();
+            }
+        });
+
+        buttonConfirmWorkout.setOnClickListener(v -> {
+            String sport = spinnerSport.getSelectedItem().toString();
+            String distanceReps = editTextDistanceReps.getText().toString();
+
+            if (distanceReps.isEmpty() || selectedDate == null) {
+                Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String workoutDescription = "Sport: " + sport + ", Distance/Reps: " + distanceReps;
+
+            if (currentPhotoBase64 != null && !isValidBase64(currentPhotoBase64)) {
+                Log.e("AddWorkoutActivity", "Invalid Base64 string");
+                currentPhotoBase64 = null; // Reset the current photo if invalid
+            }
+
+            Workout workout = new Workout(workoutDescription, currentPhotoBase64, selectedDate);
+            workoutsList.add(workout);
+            workoutsAdapter.notifyDataSetChanged();
+
+            saveWorkoutToFirestore(sport, distanceReps, selectedDate, currentPhotoBase64);
+
+            resetFields();
+        });
+
+        imageViewPhotoPreview.setOnClickListener(v -> {
+            if (currentPhotoBase64 != null) {
+                showImagePreview(currentPhotoBase64);
+            }
+        });
+    }
+
+    private void initializeUIElements() {
         spinnerSport = findViewById(R.id.spinner_sport);
         editTextDistanceReps = findViewById(R.id.editText_distance_reps);
         buttonSelectDate = findViewById(R.id.button_select_date);
         textViewSelectedDate = findViewById(R.id.textView_selected_date);
-        Button buttonUploadPhoto = findViewById(R.id.button_upload_photo);
-        Button buttonTakePhoto = findViewById(R.id.button_take_photo);
-        Button buttonConfirmWorkout = findViewById(R.id.button_confirm_workout);
+        buttonUploadPhoto = findViewById(R.id.button_upload_photo);
+        buttonTakePhoto = findViewById(R.id.button_take_photo);
+        buttonConfirmWorkout = findViewById(R.id.button_confirm_workout);
         listViewWorkouts = findViewById(R.id.listView_workouts);
         imageViewPhotoPreview = findViewById(R.id.imageView_photo_preview);
 
@@ -98,9 +152,9 @@ public class AddWorkoutActivity extends AppCompatActivity {
         workoutsList = new ArrayList<>();
         workoutsAdapter = new WorkoutAdapter(this, workoutsList);
         listViewWorkouts.setAdapter(workoutsAdapter);
+    }
 
-        loadWorkouts();
-
+    private void setupActivityResultLaunchers() {
         requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
             if (isGranted) {
                 openCamera();
@@ -119,15 +173,15 @@ public class AddWorkoutActivity extends AppCompatActivity {
                         imageViewPhotoPreview.setImageBitmap(imageBitmap);
                         imageViewPhotoPreview.setVisibility(View.VISIBLE);
                     } else {
-                        Log.e(TAG, "Decoded bitmap is null");
+                        Log.e("AddWorkoutActivity", "Decoded bitmap is null");
                         Toast.makeText(context, "Error: Decoded bitmap is null", Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    Log.e(TAG, "Photo file not found: " + currentPhotoPath);
+                    Log.e("AddWorkoutActivity", "Photo file not found: " + currentPhotoPath);
                     Toast.makeText(context, "Error: Photo file not found", Toast.LENGTH_SHORT).show();
                 }
             } else {
-                Log.e(TAG, "Camera activity result not OK");
+                Log.e("AddWorkoutActivity", "Camera activity result not OK");
             }
         });
 
@@ -144,56 +198,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             } else {
-                Log.e(TAG, "Gallery activity result not OK");
-            }
-        });
-
-        buttonUploadPhoto.setOnClickListener(v -> openGallery());
-
-        buttonTakePhoto.setOnClickListener(v -> {
-            if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissionLauncher.launch(Manifest.permission.CAMERA);
-            } else {
-                openCamera();
-            }
-        });
-
-        buttonSelectDate.setOnClickListener(v -> showDatePickerDialog());
-
-        buttonConfirmWorkout.setOnClickListener(v -> {
-            String sport = spinnerSport.getSelectedItem().toString();
-            String distanceReps = editTextDistanceReps.getText().toString();
-
-            if (distanceReps.isEmpty() || selectedDate == null) {
-                Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            String workoutDescription = "Sport: " + sport + ", Distance/Reps: " + distanceReps;
-
-            // Validate the Base64 string before creating the Workout object
-            if (currentPhotoBase64 != null && !isValidBase64(currentPhotoBase64)) {
-                Log.e("AddWorkoutActivity", "Invalid Base64 string");
-                currentPhotoBase64 = null; // Reset the current photo if invalid
-            }
-
-            Workout workout = new Workout(workoutDescription, currentPhotoBase64, selectedDate);
-            workoutsList.add(workout);
-            workoutsAdapter.notifyDataSetChanged();
-
-            saveWorkouts();
-            setListViewHeightBasedOnChildren(listViewWorkouts);
-
-            currentPhotoBase64 = null; // Reset the current photo after confirming
-            imageViewPhotoPreview.setVisibility(View.GONE); // Hide the photo preview
-            editTextDistanceReps.setText(""); // Clear the EditText
-            textViewSelectedDate.setText("No date selected"); // Clear the date text
-            selectedDate = null; // Clear the selected date
-        });
-
-        imageViewPhotoPreview.setOnClickListener(v -> {
-            if (currentPhotoBase64 != null) {
-                showImagePreview(currentPhotoBase64);
+                Log.e("AddWorkoutActivity", "Gallery activity result not OK");
             }
         });
     }
@@ -204,13 +209,9 @@ public class AddWorkoutActivity extends AppCompatActivity {
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DAY_OF_MONTH);
 
-        DatePickerDialog datePickerDialog = new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
-            @SuppressLint("SetTextI18n")
-            @Override
-            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                selectedDate = dayOfMonth + "/" + (month + 1) + "/" + year;
-                textViewSelectedDate.setText("Selected Date: " + selectedDate);
-            }
+        DatePickerDialog datePickerDialog = new DatePickerDialog(context, (view, year1, month1, dayOfMonth) -> {
+            selectedDate = dayOfMonth + "/" + (month1 + 1) + "/" + year1;
+            textViewSelectedDate.setText("Selected Date: " + selectedDate);
         }, year, month, day);
         datePickerDialog.show();
     }
@@ -249,7 +250,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
                 try {
                     photoFile = createImageFile();
                 } catch (IOException ex) {
-                    Log.e(TAG, "Error creating photo file: ", ex);
+                    Log.e("AddWorkoutActivity", "Error creating photo file: ", ex);
                     Toast.makeText(context, "Error creating photo file", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -267,17 +268,15 @@ public class AddWorkoutActivity extends AppCompatActivity {
     }
 
     private File createImageFile() throws IOException {
-        // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
+                imageFileName,
+                ".jpg",
+                storageDir
         );
 
-        // Save a file: path for use with ACTION_VIEW intents
         currentPhotoPath = image.getAbsolutePath();
         return image;
     }
@@ -289,29 +288,37 @@ public class AddWorkoutActivity extends AppCompatActivity {
         return Base64.encodeToString(byteArray, Base64.DEFAULT);
     }
 
-    private void saveWorkouts() {
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        Set<String> workoutsSet = new HashSet<>();
-        for (Workout workout : workoutsList) {
-            workoutsSet.add(workout.toString());
-        }
-        editor.putStringSet(WORKOUTS_KEY, workoutsSet);
-        editor.apply();
+    private void saveWorkoutToFirestore(String sport, String distanceReps, String date, String photoBase64) {
+        String uid = mAuth.getCurrentUser().getUid();
+
+        Map<String, Object> workout = new HashMap<>();
+        workout.put("uid", uid);
+        workout.put("sport", sport);
+        workout.put("distanceReps", distanceReps);
+        workout.put("date", date);
+        workout.put("photoBase64", photoBase64);
+
+        db.collection("users").document(uid).collection("workouts").add(workout)
+                .addOnSuccessListener(documentReference -> Toast.makeText(AddWorkoutActivity.this, "Workout added", Toast.LENGTH_SHORT).show())
+                .addOnFailureListener(e -> Toast.makeText(AddWorkoutActivity.this, "Failed to add workout", Toast.LENGTH_SHORT).show());
     }
 
     private void loadWorkouts() {
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
-        Set<String> workoutsSet = sharedPreferences.getStringSet(WORKOUTS_KEY, new HashSet<>());
-        workoutsList.clear();
-        for (String workoutString : workoutsSet) {
-            Workout workout = Workout.fromString(workoutString);
-            if (workout != null) {
-                workoutsList.add(workout);
-            }
-        }
-        workoutsAdapter.notifyDataSetChanged();
-        setListViewHeightBasedOnChildren(listViewWorkouts);
+        String uid = mAuth.getCurrentUser().getUid();
+        db.collection("users").document(uid).collection("workouts").get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    workoutsList.clear();
+                    for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                        String sport = document.getString("sport");
+                        String distanceReps = document.getString("distanceReps");
+                        String date = document.getString("date");
+                        String photoBase64 = document.getString("photoBase64");
+                        workoutsList.add(new Workout(sport + ", " + distanceReps, photoBase64, date));
+                    }
+                    workoutsAdapter.notifyDataSetChanged();
+                    setListViewHeightBasedOnChildren(listViewWorkouts);
+                })
+                .addOnFailureListener(e -> Log.e("AddWorkoutActivity", "Error loading workouts", e));
     }
 
     private void setListViewHeightBasedOnChildren(ListView listView) {
@@ -331,6 +338,14 @@ public class AddWorkoutActivity extends AppCompatActivity {
         params.height = totalHeight + (listView.getDividerHeight() * (adapter.getCount() - 1));
         listView.setLayoutParams(params);
         listView.requestLayout();
+    }
+
+    private void resetFields() {
+        currentPhotoBase64 = null; // Reset the current photo after confirming
+        imageViewPhotoPreview.setVisibility(View.GONE); // Hide the photo preview
+        editTextDistanceReps.setText(""); // Clear the EditText
+        textViewSelectedDate.setText("No date selected"); // Clear the date text
+        selectedDate = null; // Clear the selected date
     }
 
     private void showImagePreview(String imageBase64) {
