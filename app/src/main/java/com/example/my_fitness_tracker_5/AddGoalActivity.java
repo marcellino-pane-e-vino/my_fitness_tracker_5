@@ -22,9 +22,11 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -35,6 +37,7 @@ public class AddGoalActivity extends AppCompatActivity {
     private TextView textViewSelectedDate;
     private GoalAdapter goalsAdapter;
     private ArrayList<String> goalsList;
+    private ArrayList<String> goalIds;
 
     private String selectedDate;
     private Context context;
@@ -51,6 +54,7 @@ public class AddGoalActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
 
         context = this;
+        GoalCheckUtil goalCheckUtil = new GoalCheckUtil(context);
         spinnerSport = findViewById(R.id.spinner_sport);
         editTextDistanceReps = findViewById(R.id.editText_distance_reps);
         Button buttonSelectDate = findViewById(R.id.button_select_date);
@@ -65,7 +69,8 @@ public class AddGoalActivity extends AppCompatActivity {
         Objects.requireNonNull(toolbar.getNavigationIcon()).setColorFilter(ContextCompat.getColor(this, android.R.color.white), PorterDuff.Mode.SRC_ATOP);
 
         goalsList = new ArrayList<>();
-        goalsAdapter = new GoalAdapter(this, goalsList);
+        goalIds = new ArrayList<>();
+        goalsAdapter = new GoalAdapter(this, goalsList, goalIds, db);
         recyclerViewGoals.setLayoutManager(new LinearLayoutManager(this));
         recyclerViewGoals.setAdapter(goalsAdapter);
 
@@ -88,12 +93,19 @@ public class AddGoalActivity extends AppCompatActivity {
             String sport = spinnerSport.getSelectedItem().toString();
             String distanceReps = editTextDistanceReps.getText().toString();
 
-            if (distanceReps.isEmpty() || selectedDate.isEmpty()) {
+            if (distanceReps.isEmpty()) {
                 Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            String goal = "Sport: " + sport + ", Distance/Reps: " + distanceReps + ", Date: " + selectedDate;
+            String goal;
+            if (selectedDate.isEmpty()) {
+                selectedDate = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Calendar.getInstance().getTime());
+                goal = "Sport: " + sport + ", Distance/Reps: " + distanceReps + ", Start Date: " + selectedDate;
+            } else {
+                goal = "Sport: " + sport + ", Distance/Reps: " + distanceReps + ", Expiry Date: " + selectedDate;
+            }
+
             goalsList.add(goal);
             goalsAdapter.notifyDataSetChanged();
 
@@ -113,7 +125,10 @@ public class AddGoalActivity extends AppCompatActivity {
         goal.put("date", date);
 
         db.collection("users").document(uid).collection("goals").add(goal)
-                .addOnSuccessListener(documentReference -> Toast.makeText(AddGoalActivity.this, "Goal added", Toast.LENGTH_SHORT).show())
+                .addOnSuccessListener(documentReference -> {
+                    Toast.makeText(AddGoalActivity.this, "Goal added", Toast.LENGTH_SHORT).show();
+                    loadUserGoals();  // Refresh the goal list
+                })
                 .addOnFailureListener(e -> Toast.makeText(AddGoalActivity.this, "Failed to add goal", Toast.LENGTH_SHORT).show());
     }
 
@@ -122,12 +137,14 @@ public class AddGoalActivity extends AppCompatActivity {
         db.collection("users").document(uid).collection("goals").get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     goalsList.clear();
+                    goalIds.clear();
                     for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
                         String sport = document.getString("sport");
                         String distanceReps = document.getString("distanceReps");
                         String date = document.getString("date");
                         String goal = "Sport: " + sport + ", Distance/Reps: " + distanceReps + ", Date: " + date;
                         goalsList.add(goal);
+                        goalIds.add(document.getId());  // Store the document ID
                     }
                     goalsAdapter.notifyDataSetChanged();
                 })
