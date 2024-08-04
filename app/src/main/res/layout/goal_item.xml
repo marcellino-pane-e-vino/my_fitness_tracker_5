@@ -10,24 +10,24 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="Goal"
+        android:text="@string/goal"
         android:textSize="16sp" />
 
     <ProgressBar
         android:id="@+id/progressBar"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
         android:max="100"
-        android:progress="0"
-        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-        android:layout_gravity="center_vertical"/>
+        android:progress="0" />
 
     <ImageButton
         android:id="@+id/imageView_delete"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@android:drawable/ic_menu_delete"
-        android:contentDescription="Delete Goal"
+        android:layout_marginStart="8dp"
         android:background="?attr/selectableItemBackgroundBorderless"
-        android:layout_marginStart="8dp"/>
+        android:contentDescription="@string/delete_goal"
+        android:src="@android:drawable/ic_menu_delete" />
 </LinearLayout>

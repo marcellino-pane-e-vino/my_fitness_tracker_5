@@ -10,7 +10,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="Workout"
+        android:text="@string/workout"
         android:textSize="16sp" />
 
     <ImageView
@@ -24,8 +24,8 @@
         android:id="@+id/button_delete_workout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@android:drawable/ic_menu_delete"
-        android:contentDescription="Delete Workout"
+        android:layout_marginStart="8dp"
         android:background="?attr/selectableItemBackgroundBorderless"
-        android:layout_marginStart="8dp"/>
+        android:contentDescription="@string/delete_workout"
+        android:src="@android:drawable/ic_menu_delete" />
 </LinearLayout>

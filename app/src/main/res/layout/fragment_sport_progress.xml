@@ -13,11 +13,11 @@
             android:id="@+id/text_sport_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/sport_progress"
-            android:textSize="24sp"
-            android:textColor="@android:color/black"
+            android:layout_marginBottom="16dp"
             android:gravity="center"
-            android:layout_marginBottom="16dp" />
+            android:text="@string/sport_progress"
+            android:textColor="@android:color/black"
+            android:textSize="24sp" />
 
         <com.jjoe64.graphview.GraphView
             android:id="@+id/graph_sport_workouts"
@@ -29,37 +29,37 @@
             android:id="@+id/text_total_sport_workouts"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/total_sport_workouts"
             android:layout_marginTop="16dp"
-            android:textSize="16sp"
-            android:textColor="@android:color/black" />
+            android:text="@string/total_sport_workouts"
+            android:textColor="@android:color/black"
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/text_weekly_sport_workouts"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/weekly_sport_workouts"
             android:layout_marginTop="8dp"
-            android:textSize="16sp"
-            android:textColor="@android:color/black" />
+            android:text="@string/weekly_sport_workouts"
+            android:textColor="@android:color/black"
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/text_monthly_sport_workouts"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/monthly_sport_workouts"
             android:layout_marginTop="8dp"
-            android:textSize="16sp"
-            android:textColor="@android:color/black" />
+            android:text="@string/monthly_sport_workouts"
+            android:textColor="@android:color/black"
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/text_yearly_sport_workouts"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/yearly_sport_workouts"
             android:layout_marginTop="8dp"
-            android:textSize="16sp"
-            android:textColor="@android:color/black" />
+            android:text="@string/yearly_sport_workouts"
+            android:textColor="@android:color/black"
+            android:textSize="16sp" />
 
         <com.jjoe64.graphview.GraphView
             android:id="@+id/graph_distance_reps"
@@ -71,37 +71,37 @@
             android:id="@+id/text_total_distance_reps"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/total_distance_reps"
             android:layout_marginTop="16dp"
-            android:textSize="16sp"
-            android:textColor="@android:color/black" />
+            android:text="@string/total_distance_reps"
+            android:textColor="@android:color/black"
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/text_weekly_distance_reps"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/weekly_distance_reps"
             android:layout_marginTop="8dp"
-            android:textSize="16sp"
-            android:textColor="@android:color/black" />
+            android:text="@string/weekly_distance_reps"
+            android:textColor="@android:color/black"
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/text_monthly_distance_reps"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/monthly_distance_reps"
             android:layout_marginTop="8dp"
-            android:textSize="16sp"
-            android:textColor="@android:color/black" />
+            android:text="@string/monthly_distance_reps"
+            android:textColor="@android:color/black"
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/text_yearly_distance_reps"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/yearly_distance_reps"
             android:layout_marginTop="8dp"
-            android:textSize="16sp"
-            android:textColor="@android:color/black" />
+            android:text="@string/yearly_distance_reps"
+            android:textColor="@android:color/black"
+            android:textSize="16sp" />
 
     </LinearLayout>
 </ScrollView>

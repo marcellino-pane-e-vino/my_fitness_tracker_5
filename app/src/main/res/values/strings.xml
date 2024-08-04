@@ -26,6 +26,24 @@
     <string name="weekly_distance_reps">%1$s Distance/Reps This Week:</string>
     <string name="monthly_distance_reps">%1$s Distance/Reps This Month:</string>
     <string name="yearly_distance_reps">%1$s Distance/Reps This Year:</string>
+    <string name="distance_meters_or_reps">Distance (meters) or Reps</string>
+    <string name="no_date_selected">No date selected</string>
+    <string name="take_photo">Take Photo</string>
+    <string name="upload_photo">Upload Photo</string>
+    <string name="select_date">Select Date</string>
+    <string name="confirm_workout">Confirm Workout</string>
+    <string name="added_workouts">Added Workouts:</string>
+    <string name="add_a_goal">Add a Goal</string>
+    <string name="add_a_workout">Add a Workout</string>
+    <string name="squat_counter">Squat Counter</string>
+    <string name="squats_0">Squats: 0</string>
+    <string name="start_squats">Start Squats</string>
+    <string name="stop_squats">Stop Squats</string>
+    <string name="large_image_preview">Large Image Preview</string>
+    <string name="goal">Goal</string>
+    <string name="delete_goal">Delete Goal</string>
+    <string name="workout">Workout</string>
+    <string name="delete_workout">Delete Workout</string>
     <string-array name="sports_array">
         <item>Run</item>
         <item>Walk</item>
