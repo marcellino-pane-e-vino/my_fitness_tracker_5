@@ -54,7 +54,7 @@ public class AddGoalActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
 
         context = this;
-        GoalCheckUtil goalCheckUtil = new GoalCheckUtil(context);
+        new GoalCheckUtil(context);
         spinnerSport = findViewById(R.id.spinner_sport);
         editTextDistanceReps = findViewById(R.id.editText_distance_reps);
         // start date is always current date

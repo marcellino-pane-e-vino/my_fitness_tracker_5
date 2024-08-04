@@ -20,7 +20,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -256,7 +255,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
         if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)) {
             Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-                File photoFile = null;
+                File photoFile;
                 try {
                     photoFile = createImageFile();
                 } catch (IOException ex) {
@@ -299,7 +298,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
     }
 
     private void saveWorkoutToFirestore(String sport, String distanceReps, String date, String photoBase64) {
-        String uid = mAuth.getCurrentUser().getUid();
+        String uid = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
 
         Map<String, Object> workout = new HashMap<>();
         workout.put("uid", uid);
@@ -321,7 +320,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
     }
 
     private void loadWorkouts() {
-        String uid = mAuth.getCurrentUser().getUid();
+        String uid = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         db.collection("users").document(uid).collection("workouts").get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     workoutsList.clear();

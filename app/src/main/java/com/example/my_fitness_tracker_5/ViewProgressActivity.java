@@ -2,10 +2,12 @@ package com.example.my_fitness_tracker_5;
 
 import android.graphics.PorterDuff;
 import android.os.Bundle;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.viewpager2.widget.ViewPager2;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;

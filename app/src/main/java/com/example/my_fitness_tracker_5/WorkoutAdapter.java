@@ -21,8 +21,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 public class WorkoutAdapter extends ArrayAdapter<Workout> {
@@ -78,15 +76,13 @@ public class WorkoutAdapter extends ArrayAdapter<Workout> {
             imageViewPhoto.setVisibility(View.GONE);
         }
 
-        imageViewDelete.setOnClickListener(v -> {
-            deleteWorkoutFromFirestore(position);
-        });
+        imageViewDelete.setOnClickListener(v -> deleteWorkoutFromFirestore(position));
 
         return convertView;
     }
 
     private void deleteWorkoutFromFirestore(int position) {
-        String uid = mAuth.getCurrentUser().getUid();
+        String uid = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         String workoutId = workoutIds.get(position);
         db.collection("users").document(uid).collection("workouts").document(workoutId).delete()
                 .addOnSuccessListener(aVoid -> {

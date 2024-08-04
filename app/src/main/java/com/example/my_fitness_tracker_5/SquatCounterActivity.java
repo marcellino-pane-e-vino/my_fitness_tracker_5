@@ -93,7 +93,7 @@ public class SquatCounterActivity extends AppCompatActivity implements SensorEve
     }
 
     private void saveWorkoutToFirestore() {
-        String uid = mAuth.getCurrentUser().getUid();
+        String uid = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         String date = dateFormat.format(new Date());
         String description = "Squat workout";

@@ -37,7 +37,6 @@ public class ProfileActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
-    private FirebaseStorage storage;
     private StorageReference storageReference;
     private ImageView imageViewProfilePicture;
     private TextView textViewEmail;
@@ -49,7 +48,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
-        storage = FirebaseStorage.getInstance();
+        FirebaseStorage storage = FirebaseStorage.getInstance();
         storageReference = storage.getReference();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -134,7 +133,7 @@ public class ProfileActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         } else if (requestCode == CAMERA_REQUEST && resultCode == RESULT_OK && data != null) {
-            Bitmap bitmap = (Bitmap) data.getExtras().get("data");
+            Bitmap bitmap = (Bitmap) Objects.requireNonNull(data.getExtras()).get("data");
             imageViewProfilePicture.setImageBitmap(bitmap);
             uploadImageToFirebase(bitmap);
         }
@@ -151,9 +150,7 @@ public class ProfileActivity extends AppCompatActivity {
             byte[] data = baos.toByteArray();
 
             UploadTask uploadTask = profileImageRef.putBytes(data);
-            uploadTask.addOnSuccessListener(taskSnapshot -> profileImageRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                saveProfileImageUrlToFirestore(uid, uri.toString());
-            })).addOnFailureListener(e -> {
+            uploadTask.addOnSuccessListener(taskSnapshot -> profileImageRef.getDownloadUrl().addOnSuccessListener(uri -> saveProfileImageUrlToFirestore(uid, uri.toString()))).addOnFailureListener(e -> {
                 e.printStackTrace(); // Log the error
                 Toast.makeText(ProfileActivity.this, "Failed to upload image: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             });

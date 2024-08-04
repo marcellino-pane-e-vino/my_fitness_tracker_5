@@ -6,16 +6,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.jjoe64.graphview.DefaultLabelFormatter;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.BarGraphSeries;
 import com.jjoe64.graphview.series.DataPoint;
-import com.jjoe64.graphview.DefaultLabelFormatter;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -104,8 +107,8 @@ public class SportProgressFragment extends Fragment {
 
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             Workout workout = document.toObject(Workout.class);
-                            Log.d("SportProgressFragment", "Fetched workout: " + workout.toString());
-                            if (workout != null && (sport.equalsIgnoreCase("General") || (workout.getSport() != null && workout.getSport().equalsIgnoreCase(sport)))) {
+                            Log.d("SportProgressFragment", "Fetched workout: " + workout);
+                            if (sport.equalsIgnoreCase("General") || workout.getSport() != null && workout.getSport().equalsIgnoreCase(sport)) {
                                 try {
                                     Date workoutDate = dateFormat.parse(workout.getDate());
                                     assert workoutDate != null;
