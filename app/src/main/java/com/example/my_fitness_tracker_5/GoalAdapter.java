@@ -25,16 +25,17 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.ViewHolder> {
 
     private static final String CHANNEL_ID = "goal_notification_channel";
     private static final String TAG = "GoalAdapter";
-    private Context context;
-    private ArrayList<String> goalsList;
-    private ArrayList<String> goalIds; // Initialize goalIds in constructor
-    private FirebaseFirestore db;
-    private FirebaseAuth mAuth;
+    private final Context context;
+    private final ArrayList<String> goalsList;
+    private final ArrayList<String> goalIds; // Initialize goalIds in constructor
+    private final FirebaseFirestore db;
+    private final FirebaseAuth mAuth;
 
     public GoalAdapter(Context context, ArrayList<String> goalsList, ArrayList<String> goalIds) {
         this.context = context;
@@ -74,7 +75,7 @@ public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.ViewHolder> {
     }
 
     private void calculateProgress(String sport, double goalDistanceReps, ProgressBar progressBar, int position) {
-        String uid = mAuth.getCurrentUser().getUid();
+        String uid = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         db.collection("users").document(uid).collection("workouts")
                 .whereEqualTo("sport", sport)
                 .get()
@@ -90,16 +91,16 @@ public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.ViewHolder> {
                     progressBar.setProgress(progress);
 
                     if (progress >= 100) {
-//                        sendNotification("Goal Achieved", "You have reached your goal: " + goalsList.get(position));
+                        sendNotification("You have reached your goal: " + goalsList.get(position));
                         sendToast("Goal Achieved: " + goalsList.get(position));
-//                        deleteGoalFromFirestore(position);
+                        deleteGoalFromFirestore(position);
                     }
                 })
                 .addOnFailureListener(e -> Toast.makeText(context, "Failed to calculate progress", Toast.LENGTH_SHORT).show());
     }
 
     private void deleteGoalFromFirestore(int position) {
-        String uid = mAuth.getCurrentUser().getUid();
+        String uid = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         String goalId = goalIds.get(position);
         db.collection("users").document(uid).collection("goals").document(goalId).delete()
                 .addOnSuccessListener(aVoid -> {
@@ -124,7 +125,7 @@ public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.ViewHolder> {
         }
     }
 
-    private void sendNotification(String title, String message) {
+    private void sendNotification(String message) {
         Intent intent = new Intent(context, MainActivity.class);
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
         stackBuilder.addNextIntentWithParentStack(intent);
@@ -132,7 +133,7 @@ public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.ViewHolder> {
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context.getApplicationContext(), CHANNEL_ID)
                 .setSmallIcon(R.drawable.baseline_check_circle_24)
-                .setContentTitle(title)
+                .setContentTitle("Goal Achieved")
                 .setContentText(message)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true)
@@ -159,7 +160,7 @@ public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.ViewHolder> {
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
             channel.setDescription(description);
 
-            NotificationManager notificationManager = (NotificationManager) context.getSystemService(NotificationManager.class);
+            NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
             if (notificationManager != null) {
                 notificationManager.createNotificationChannel(channel);
                 Log.d(TAG, "Notification channel created");

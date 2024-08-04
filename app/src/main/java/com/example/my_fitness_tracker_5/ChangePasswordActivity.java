@@ -25,8 +25,6 @@ public class ChangePasswordActivity extends AppCompatActivity {
     private EditText editTextOldPassword;
     private EditText editTextNewPassword;
     private EditText editTextConfirmNewPassword;
-    private Button buttonChangePassword;
-    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,8 +34,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
         editTextOldPassword = findViewById(R.id.editTextOldPassword);
         editTextNewPassword = findViewById(R.id.editTextNewPassword);
         editTextConfirmNewPassword = findViewById(R.id.editTextConfirmNewPassword);
-        buttonChangePassword = findViewById(R.id.buttonChangePassword);
-        mAuth = FirebaseAuth.getInstance();
+        Button buttonChangePassword = findViewById(R.id.buttonChangePassword);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -63,6 +60,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
             FirebaseAuth auth = FirebaseAuth.getInstance();
             String email = Objects.requireNonNull(auth.getCurrentUser()).getEmail();
 
+            assert email != null;
             AuthCredential credential = EmailAuthProvider.getCredential(email, oldPassword);
             auth.getCurrentUser().reauthenticate(credential).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {

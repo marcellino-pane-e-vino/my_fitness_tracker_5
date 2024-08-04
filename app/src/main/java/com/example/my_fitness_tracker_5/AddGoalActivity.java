@@ -6,7 +6,6 @@ import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -80,7 +79,7 @@ public class AddGoalActivity extends AppCompatActivity {
         selectedStartDate = sdf.format(Calendar.getInstance().getTime());
         selectedExpiryDate = "";
 
-        buttonSelectExpiryDate.setOnClickListener(v -> showDatePickerDialog(false));
+        buttonSelectExpiryDate.setOnClickListener(v -> showDatePickerDialog());
 
         buttonConfirmGoal.setOnClickListener(v -> {
             String sport = spinnerSport.getSelectedItem().toString();
@@ -103,21 +102,15 @@ public class AddGoalActivity extends AppCompatActivity {
         loadUserGoals();
     }
 
-    private void showDatePickerDialog(boolean isStartDate) {
+    private void showDatePickerDialog() {
         Calendar calendar = Calendar.getInstance();
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DAY_OF_MONTH);
 
         DatePickerDialog datePickerDialog = new DatePickerDialog(context, (view, year1, month1, dayOfMonth) -> {
-            String selectedDate = dayOfMonth + "/" + (month1 + 1) + "/" + year1;
-            if (isStartDate) {
-                selectedStartDate = selectedDate;
-                textViewSelectedDate.setText("Selected Start Date: " + selectedStartDate);
-            } else {
-                selectedExpiryDate = selectedDate;
-                textViewSelectedDate.setText("Selected Expiry Date: " + selectedExpiryDate);
-            }
+            selectedExpiryDate = dayOfMonth + "/" + (month1 + 1) + "/" + year1;
+            textViewSelectedDate.setText("Selected Expiry Date: " + selectedExpiryDate);
         }, year, month, day);
         datePickerDialog.show();
     }

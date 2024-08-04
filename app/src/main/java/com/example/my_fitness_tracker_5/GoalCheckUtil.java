@@ -17,6 +17,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Objects;
 
 public class GoalCheckUtil {
 
@@ -33,7 +34,7 @@ public class GoalCheckUtil {
     }
 
     public void checkGoalCompletion(String sport, double distance) {
-        String uid = mAuth.getCurrentUser().getUid();
+        String uid = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         db.collection("users").document(uid).collection("goals")
                 .whereEqualTo("sport", sport)
                 .get()
@@ -47,7 +48,7 @@ public class GoalCheckUtil {
                             try {
                                 Date goalExpiryDate = sdf.parse(goalDate);
                                 if (goalExpiryDate != null && goalExpiryDate.after(new Date())) {
-                                    sendNotification("Goal Achieved", "You have reached your goal: " + document.getString("sport") + ", " + document.getString("distanceReps") + " " + document.getString("expiryDate"));
+                                    sendNotification("You have reached your goal: " + document.getString("sport") + ", " + document.getString("distanceReps") + " " + document.getString("expiryDate"));
                                     sendToast("Goal Achieved: " + document.getString("sport") + ", " + document.getString("distanceReps"));
                                     db.collection("users").document(uid).collection("goals").document(document.getId()).delete();
                                 }
@@ -60,10 +61,10 @@ public class GoalCheckUtil {
                 .addOnFailureListener(e -> Log.e("GoalCheckUtil", "Failed to check goals", e));
     }
 
-    private void sendNotification(String title, String message) {
+    private void sendNotification(String message) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.baseline_check_circle_24)
-                .setContentTitle(title)
+                .setContentTitle("Goal Achieved")
                 .setContentText(message)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true);
@@ -89,7 +90,7 @@ public class GoalCheckUtil {
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
             channel.setDescription(description);
 
-            NotificationManager notificationManager = (NotificationManager) context.getSystemService(NotificationManager.class);
+            NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
             if (notificationManager != null) {
                 notificationManager.createNotificationChannel(channel);
                 Log.d("GoalCheckUtil", "Notification channel created");
