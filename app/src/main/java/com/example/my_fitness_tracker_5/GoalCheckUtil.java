@@ -69,7 +69,12 @@ public class GoalCheckUtil {
                 .setAutoCancel(true);
 
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.notify(1, builder.build());
+        if (notificationManager != null) {
+            notificationManager.notify((int) System.currentTimeMillis(), builder.build());
+            Log.d("GoalCheckUtil", "Notification sent: " + message);
+        } else {
+            Log.e("GoalCheckUtil", "NotificationManager is null");
+        }
     }
 
     private void sendToast(String message) {
@@ -85,7 +90,12 @@ public class GoalCheckUtil {
             channel.setDescription(description);
 
             NotificationManager notificationManager = (NotificationManager) context.getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(channel);
+                Log.d("GoalCheckUtil", "Notification channel created");
+            } else {
+                Log.e("GoalCheckUtil", "Failed to create notification channel");
+            }
         }
     }
 }
