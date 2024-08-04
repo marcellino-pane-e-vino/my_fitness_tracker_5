@@ -1,19 +1,27 @@
 package com.example.my_fitness_tracker_5;
 
+import android.content.Intent;
+import android.graphics.PorterDuff;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import com.google.firebase.firestore.FirebaseFirestore;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Objects;
 
 public class SquatCounterActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -37,6 +45,12 @@ public class SquatCounterActivity extends AppCompatActivity implements SensorEve
         buttonStartSquats = findViewById(R.id.button_start_squats);
         buttonStopSquats = findViewById(R.id.button_stop_squats);
 
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle("Squat Counter");
+        Objects.requireNonNull(toolbar.getNavigationIcon()).setColorFilter(ContextCompat.getColor(this, android.R.color.white), PorterDuff.Mode.SRC_ATOP);
+
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
@@ -47,10 +61,20 @@ public class SquatCounterActivity extends AppCompatActivity implements SensorEve
         buttonStopSquats.setOnClickListener(v -> stopCounting());
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            finish(); // Navigate back to the previous activity
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     private void startCounting() {
         isCounting = true;
         squatCount = 0;
         lastY = 0;
+        buttonStartSquats.setEnabled(false);
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
@@ -72,11 +96,13 @@ public class SquatCounterActivity extends AppCompatActivity implements SensorEve
 
         db.collection("users").document(uid).collection("workouts").add(workout)
                 .addOnSuccessListener(documentReference -> {
-                    // Handle success
+                    Toast.makeText(SquatCounterActivity.this, "Workout added", Toast.LENGTH_SHORT).show();
+                    // Navigate back to the progress view page
+                    Intent intent = new Intent(SquatCounterActivity.this, MainActivity.class);
+                    startActivity(intent);
+                    finish();
                 })
-                .addOnFailureListener(e -> {
-                    // Handle failure
-                });
+                .addOnFailureListener(e -> Toast.makeText(SquatCounterActivity.this, "Failed to add workout", Toast.LENGTH_SHORT).show());
     }
 
     @Override
