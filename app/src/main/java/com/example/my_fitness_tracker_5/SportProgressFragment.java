@@ -58,24 +58,26 @@ public class SportProgressFragment extends Fragment {
         textSportTitle.setText(sport);
 
         GraphView graphSportWorkouts = view.findViewById(R.id.graph_sport_workouts);
+        GraphView graphDistanceReps = view.findViewById(R.id.graph_distance_reps);
         TextView textTotalWorkouts = view.findViewById(R.id.text_total_workouts);
         TextView textWeeklyWorkouts = view.findViewById(R.id.text_weekly_workouts);
         TextView textMonthlyWorkouts = view.findViewById(R.id.text_monthly_workouts);
         TextView textYearlyWorkouts = view.findViewById(R.id.text_yearly_workouts);
 
         // Fetch data from Firestore and display it
-        fetchWorkoutDataAndDisplay(graphSportWorkouts, textTotalWorkouts, textWeeklyWorkouts, textMonthlyWorkouts, textYearlyWorkouts);
+        fetchWorkoutDataAndDisplay(graphSportWorkouts, graphDistanceReps, textTotalWorkouts, textWeeklyWorkouts, textMonthlyWorkouts, textYearlyWorkouts);
 
         return view;
     }
 
-    private void fetchWorkoutDataAndDisplay(GraphView graphSportWorkouts, TextView textTotalWorkouts, TextView textWeeklyWorkouts, TextView textMonthlyWorkouts, TextView textYearlyWorkouts) {
+    private void fetchWorkoutDataAndDisplay(GraphView graphSportWorkouts, GraphView graphDistanceReps, TextView textTotalWorkouts, TextView textWeeklyWorkouts, TextView textMonthlyWorkouts, TextView textYearlyWorkouts) {
         String uid = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         db.collection("users").document(uid).collection("workouts")
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         Map<String, Integer> dailyWorkoutCount = new HashMap<>();
+                        Map<String, Double> dailyDistanceReps = new HashMap<>();
                         int totalWorkouts = 0;
                         int weeklyWorkouts = 0;
                         int monthlyWorkouts = 0;
@@ -118,15 +120,18 @@ public class SportProgressFragment extends Fragment {
 
                                     String day = dayFormat.format(workoutDate);
                                     dailyWorkoutCount.put(day, dailyWorkoutCount.getOrDefault(day, 0) + 1);
+
+                                    double distanceReps = Double.parseDouble(workout.getDistanceReps());
+                                    dailyDistanceReps.put(day, dailyDistanceReps.getOrDefault(day, 0.0) + distanceReps);
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }
                             }
                         }
 
-                        // Update graph and statistics
-                        BarGraphSeries<DataPoint> series = new BarGraphSeries<>(getDataPoints(dailyWorkoutCount));
-                        graphSportWorkouts.addSeries(series);
+                        // Update graphs and statistics
+                        BarGraphSeries<DataPoint> workoutSeries = new BarGraphSeries<>(getDataPoints(dailyWorkoutCount));
+                        graphSportWorkouts.addSeries(workoutSeries);
 
                         graphSportWorkouts.setTitle("Workouts This Week");
                         graphSportWorkouts.getGridLabelRenderer().setHorizontalAxisTitle("Day");
@@ -134,14 +139,44 @@ public class SportProgressFragment extends Fragment {
                         graphSportWorkouts.getViewport().setMaxX(7);
                         graphSportWorkouts.getViewport().setXAxisBoundsManual(true);
                         graphSportWorkouts.getGridLabelRenderer().setNumHorizontalLabels(7);
-                        series.setSpacing(5); // Adjust spacing between bars if needed
-                        series.setDataWidth(0.2); // Set the width of each bar
+                        workoutSeries.setSpacing(5); // Adjust spacing between bars if needed
+                        workoutSeries.setDataWidth(0.2); // Set the width of each bar
                         graphSportWorkouts.getViewport().setScrollable(false);
                         graphSportWorkouts.getViewport().setScalable(false);
                         graphSportWorkouts.getViewport().setScrollableY(false);
                         graphSportWorkouts.getViewport().setScalableY(false);
 
                         graphSportWorkouts.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter() {
+                            @Override
+                            public String formatLabel(double value, boolean isValueX) {
+                                if (isValueX) {
+                                    String[] daysOfWeek = {"Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"};
+                                    int dayIndex = (int) value - 1;
+                                    if (dayIndex >= 0 && dayIndex < daysOfWeek.length) {
+                                        return daysOfWeek[dayIndex];
+                                    }
+                                }
+                                return super.formatLabel(value, isValueX);
+                            }
+                        });
+
+                        BarGraphSeries<DataPoint> distanceRepsSeries = new BarGraphSeries<>(getDistanceRepsDataPoints(dailyDistanceReps));
+                        graphDistanceReps.addSeries(distanceRepsSeries);
+
+                        graphDistanceReps.setTitle("Distance/Reps This Week");
+                        graphDistanceReps.getGridLabelRenderer().setHorizontalAxisTitle("Day");
+                        graphDistanceReps.getViewport().setMinX(1);
+                        graphDistanceReps.getViewport().setMaxX(7);
+                        graphDistanceReps.getViewport().setXAxisBoundsManual(true);
+                        graphDistanceReps.getGridLabelRenderer().setNumHorizontalLabels(7);
+                        distanceRepsSeries.setSpacing(5); // Adjust spacing between bars if needed
+                        distanceRepsSeries.setDataWidth(0.2); // Set the width of each bar
+                        graphDistanceReps.getViewport().setScrollable(false);
+                        graphDistanceReps.getViewport().setScalable(false);
+                        graphDistanceReps.getViewport().setScrollableY(false);
+                        graphDistanceReps.getViewport().setScalableY(false);
+
+                        graphDistanceReps.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter() {
                             @Override
                             public String formatLabel(double value, boolean isValueX) {
                                 if (isValueX) {
@@ -170,6 +205,16 @@ public class SportProgressFragment extends Fragment {
         for (int i = 1; i <= 7; i++) {
             String day = String.valueOf(i);
             int count = dailyWorkoutCount.getOrDefault(day, 0);
+            dataPoints[i - 1] = new DataPoint(i, count);
+        }
+        return dataPoints;
+    }
+
+    private DataPoint[] getDistanceRepsDataPoints(Map<String, Double> dailyDistanceReps) {
+        DataPoint[] dataPoints = new DataPoint[7];
+        for (int i = 1; i <= 7; i++) {
+            String day = String.valueOf(i);
+            double count = dailyDistanceReps.getOrDefault(day, 0.0);
             dataPoints[i - 1] = new DataPoint(i, count);
         }
         return dataPoints;

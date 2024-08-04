@@ -25,6 +25,12 @@
             android:layout_height="400dp"
             android:layout_marginTop="16dp" />
 
+        <com.jjoe64.graphview.GraphView
+            android:id="@+id/graph_distance_reps"
+            android:layout_width="match_parent"
+            android:layout_height="400dp"
+            android:layout_marginTop="16dp" />
+
         <TextView
             android:id="@+id/text_total_workouts"
             android:layout_width="match_parent"
