@@ -43,6 +43,7 @@
         <activity android:name=".LoginActivity"/>
         <activity android:name=".RegisterActivity"/>
         <activity android:name=".ChangePasswordActivity"/>
+        <activity android:name=".SquatCounterActivity"/> <!-- Add this line -->
 
         <provider
             android:name="androidx.core.content.FileProvider"

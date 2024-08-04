@@ -47,5 +47,9 @@ public class MainActivity extends AppCompatActivity {
         buttonViewProgress.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, ViewProgressActivity.class)));
 
         buttonProfile.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, ProfileActivity.class)));
+
+        Button buttonSquatCounter = findViewById(R.id.button_squat_counter);
+        buttonSquatCounter.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, SquatCounterActivity.class)));
+
     }
 }
