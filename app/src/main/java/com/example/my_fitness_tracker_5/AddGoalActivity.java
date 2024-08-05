@@ -21,6 +21,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -110,7 +111,7 @@ public class AddGoalActivity extends AppCompatActivity {
 
         DatePickerDialog datePickerDialog = new DatePickerDialog(context, (view, year1, month1, dayOfMonth) -> {
             selectedExpiryDate = dayOfMonth + "/" + (month1 + 1) + "/" + year1;
-            textViewSelectedDate.setText("Selected Expiry Date: " + selectedExpiryDate);
+            textViewSelectedDate.setText(MessageFormat.format("Selected Expiry Date: {0}", selectedExpiryDate));
         }, year, month, day);
         datePickerDialog.show();
     }

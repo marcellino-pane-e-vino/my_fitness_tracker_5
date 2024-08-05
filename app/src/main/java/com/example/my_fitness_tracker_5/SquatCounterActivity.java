@@ -19,6 +19,7 @@ import androidx.core.content.ContextCompat;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -84,7 +85,7 @@ public class SquatCounterActivity extends AppCompatActivity implements SensorEve
     private void stopCounting() {
         isCounting = false;
         sensorManager.unregisterListener(this);
-        textSquatCount.setText("Squats: " + squatCount);
+        textSquatCount.setText(MessageFormat.format("Squats: {0}", squatCount));
         if (squatCount == 0) {
             buttonStopSquats.setEnabled(false);
         } else {
@@ -127,7 +128,7 @@ public class SquatCounterActivity extends AppCompatActivity implements SensorEve
 
             if (y - lastY > 3.5) {
                 squatCount++;
-                textSquatCount.setText("Squats: " + squatCount);
+                textSquatCount.setText(MessageFormat.format("Squats: {0}", squatCount));
             }
 
             lastY = y;
