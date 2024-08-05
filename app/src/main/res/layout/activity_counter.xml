@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".SquatCounterActivity">
+    tools:context=".BaseCounterActivity">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -18,34 +18,34 @@
         app:titleTextColor="@android:color/white" />
 
     <TextView
-        android:id="@+id/text_squat_count"
+        android:id="@+id/text_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="@string/squats_0"
+        android:text="Count: 0"
         android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar" />
 
     <Button
-        android:id="@+id/button_start_squats"
+        android:id="@+id/button_start"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="@string/start_squats"
+        android:text="Start"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_squat_count" />
+        app:layout_constraintTop_toBottomOf="@id/text_count" />
 
     <Button
-        android:id="@+id/button_stop_squats"
+        android:id="@+id/button_stop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="@string/stop_squats"
+        android:text="Stop"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/button_start_squats" />
+        app:layout_constraintTop_toBottomOf="@id/button_start" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

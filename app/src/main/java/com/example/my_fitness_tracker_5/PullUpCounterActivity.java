@@ -6,19 +6,19 @@ import android.hardware.SensorManager;
 
 import java.text.MessageFormat;
 
-public class SquatCounterActivity extends BaseCounterActivity {
+public class PullUpCounterActivity extends BaseCounterActivity {
 
     private Sensor accelerometer;
 
-    // State variables for squat detection
-    private static final float SQUAT_THRESHOLD = 1.5f;
-    private static final int STATE_STANDING = 0;
-    private static final int STATE_SQUATTING = 1;
-    private int squatState = STATE_STANDING;
+    // State variables for pullup detection
+    private static final float PULL_UP_THRESHOLD = 1.5f;
+    private static final int STATE_HANGING = 0;
+    private static final int STATE_PULLING_UP = 1;
+    private int pullUpState = STATE_HANGING;
 
     @Override
     protected String getTitleText() {
-        return "Squat Counter";
+        return "Pullup Counter";
     }
 
     @Override
@@ -35,11 +35,11 @@ public class SquatCounterActivity extends BaseCounterActivity {
     protected void stopCounting() {
         isCounting = false;
         sensorManager.unregisterListener(this);
-        textCount.setText(MessageFormat.format("Squats: {0}", count));
+        textCount.setText(MessageFormat.format("Pullups: {0}", count));
         if (count == 0) {
             buttonStop.setEnabled(false);
         } else {
-            saveWorkoutToFirestore("Squat", "Squat workout");
+            saveWorkoutToFirestore("Pullup", "Pullup workout");
         }
     }
 
@@ -54,19 +54,19 @@ public class SquatCounterActivity extends BaseCounterActivity {
                 linearAcceleration[i] = event.values[i] - gravity[i];
             }
 
-            float y = linearAcceleration[1]; // Use the Y axis for squat detection
+            float y = linearAcceleration[1]; // Use the Y axis for pullup detection
 
-            switch (squatState) {
-                case STATE_STANDING:
-                    if (y < -SQUAT_THRESHOLD) {
-                        squatState = STATE_SQUATTING;
+            switch (pullUpState) {
+                case STATE_HANGING:
+                    if (y < -PULL_UP_THRESHOLD) {
+                        pullUpState = STATE_PULLING_UP;
                     }
                     break;
-                case STATE_SQUATTING:
-                    if (y > SQUAT_THRESHOLD) {
-                        squatState = STATE_STANDING;
+                case STATE_PULLING_UP:
+                    if (y > PULL_UP_THRESHOLD) {
+                        pullUpState = STATE_HANGING;
                         count++;
-                        textCount.setText(MessageFormat.format("Squats: {0}", count));
+                        textCount.setText(MessageFormat.format("pullups: {0}", count));
                     }
                     break;
             }

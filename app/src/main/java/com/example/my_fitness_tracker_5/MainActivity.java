@@ -39,19 +39,23 @@ public class MainActivity extends AppCompatActivity {
 
         Button buttonAddGoal = findViewById(R.id.button_add_goal);
         Button buttonAddWorkout = findViewById(R.id.button_add_workout);
+        Button buttonSquatCounter = findViewById(R.id.button_squat_counter);
+        Button buttonPullUpCounter = findViewById(R.id.button_pull_up_counter);
+        Button buttonPushUpCounter = findViewById(R.id.button_push_up_counter);
+        Button buttonWalkCounter = findViewById(R.id.button_walk_counter);
+        Button buttonRunCounter = findViewById(R.id.button_run_counter);
         Button buttonViewProgress = findViewById(R.id.button_view_progress);
         Button buttonProfile = findViewById(R.id.button_profile);
 
         buttonAddGoal.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, AddGoalActivity.class)));
-
         buttonAddWorkout.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, AddWorkoutActivity.class)));
-
-        buttonViewProgress.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, ViewProgressActivity.class)));
-
-        buttonProfile.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, ProfileActivity.class)));
-
-        Button buttonSquatCounter = findViewById(R.id.button_squat_counter);
         buttonSquatCounter.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, SquatCounterActivity.class)));
+        buttonPullUpCounter.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, PullUpCounterActivity.class)));
+        buttonPushUpCounter.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, PushUpCounterActivity.class)));
+        buttonWalkCounter.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, WalkCounterActivity.class)));
+        buttonRunCounter.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, RunCounterActivity.class)));
+        buttonViewProgress.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, ViewProgressActivity.class)));
+        buttonProfile.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, ProfileActivity.class)));
 
         // Schedule the GoalCheckWorker to run periodically
         PeriodicWorkRequest goalCheckWorkRequest = new PeriodicWorkRequest.Builder(GoalCheckWorker.class, 24, TimeUnit.HOURS)

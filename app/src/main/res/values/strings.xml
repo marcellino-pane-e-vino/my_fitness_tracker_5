@@ -45,6 +45,10 @@
     <string name="workout">Workout</string>
     <string name="delete_workout">Delete Workout</string>
     <string name="selected_date">Selected Date:</string>
+    <string name="pull_up_counter">Pullup Counter</string>
+    <string name="push_up_counter">Pushup Counter</string>
+    <string name="walk_counter">Walk Counter</string>
+    <string name="run_counter">Run Counter</string>
     <string-array name="sports_array">
         <item>Run</item>
         <item>Walk</item>

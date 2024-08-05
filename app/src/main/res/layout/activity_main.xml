@@ -57,6 +57,58 @@
         app:layout_constraintTop_toBottomOf="@id/button_add_workout" />
 
     <Button
+        android:id="@+id/button_pull_up_counter"
+        style="@style/StyledButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="32dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/pull_up_counter"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/button_squat_counter" />
+
+    <Button
+        android:id="@+id/button_push_up_counter"
+        style="@style/StyledButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="32dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/push_up_counter"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/button_pull_up_counter" />
+
+    <Button
+        android:id="@+id/button_walk_counter"
+        style="@style/StyledButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="32dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/walk_counter"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/button_push_up_counter" />
+
+    <Button
+        android:id="@+id/button_run_counter"
+        style="@style/StyledButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="32dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/run_counter"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/button_walk_counter" />
+
+    <Button
         android:id="@+id/button_view_progress"
         style="@style/StyledButton"
         android:layout_width="0dp"
@@ -67,7 +119,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/button_squat_counter" />
+        app:layout_constraintTop_toBottomOf="@id/button_run_counter" />
 
     <Button
         android:id="@+id/button_profile"

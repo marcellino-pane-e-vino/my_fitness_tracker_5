@@ -47,7 +47,12 @@
         <activity android:name=".LoginActivity" />
         <activity android:name=".RegisterActivity" />
         <activity android:name=".ChangePasswordActivity" />
-        <activity android:name=".SquatCounterActivity" /> <!-- Add this line -->
+        <activity android:name=".SquatCounterActivity" />
+        <activity android:name=".PullUpCounterActivity" />
+        <activity android:name=".PushUpCounterActivity" />
+        <activity android:name=".RunCounterActivity" />
+        <activity android:name=".WalkCounterActivity" />
+        <activity android:name=".BaseCounterActivity" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
