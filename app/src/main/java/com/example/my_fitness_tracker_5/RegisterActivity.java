@@ -72,7 +72,6 @@ public class RegisterActivity extends AppCompatActivity {
         Map<String, Object> userProfile = new HashMap<>();
         userProfile.put("uid", uid);
         userProfile.put("email", email);
-        // Add more fields if needed
 
         db.collection("users").document(uid).set(userProfile)
                 .addOnSuccessListener(aVoid -> Toast.makeText(RegisterActivity.this, "User profile saved", Toast.LENGTH_SHORT).show())

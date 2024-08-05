@@ -58,7 +58,6 @@ public class AddGoalActivity extends AppCompatActivity {
         new GoalCheckUtil(context);
         spinnerSport = findViewById(R.id.spinner_sport);
         editTextDistanceReps = findViewById(R.id.editText_distance_reps);
-        // start date is always current date
         Button buttonSelectExpiryDate = findViewById(R.id.button_select_date);
         Button buttonConfirmGoal = findViewById(R.id.button_confirm_goal);
         textViewSelectedDate = findViewById(R.id.textView_selected_date);
@@ -94,7 +93,7 @@ public class AddGoalActivity extends AppCompatActivity {
             String goal = "Sport: " + sport + ", Distance/Reps: " + distanceReps + ", Start Date: " + selectedStartDate + ", Expiry Date: " + selectedExpiryDate;
 
             goalsList.add(goal);
-            goalIds.add(null); // Placeholder for the ID that will be added later
+            goalIds.add(null);
             goalsAdapter.notifyDataSetChanged();
 
             saveGoalToFirestore(sport, distanceReps, selectedStartDate, selectedExpiryDate);
@@ -158,7 +157,7 @@ public class AddGoalActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            finish(); // This will navigate back to the previous activity
+            finish();
             return true;
         }
         return super.onOptionsItemSelected(item);

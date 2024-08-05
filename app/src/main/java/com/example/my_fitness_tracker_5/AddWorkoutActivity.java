@@ -312,9 +312,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
         db.collection("users").document(uid).collection("workouts").add(workout)
                 .addOnSuccessListener(documentReference -> {
                     Toast.makeText(AddWorkoutActivity.this, "Workout added", Toast.LENGTH_SHORT).show();
-                    // Check for goal completion
                     goalCheckUtil.checkGoalCompletion(sport, Double.parseDouble(distanceReps));
-                    // Schedule the GoalCheckWorker
                     OneTimeWorkRequest goalCheckWorkRequest = new OneTimeWorkRequest.Builder(GoalCheckWorker.class)
                             .build();
                     WorkManager.getInstance(context).enqueue(goalCheckWorkRequest);

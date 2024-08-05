@@ -89,25 +89,21 @@ public abstract class BaseCounterActivity extends AppCompatActivity implements S
 
         db.collection("users").document(uid).collection("workouts").add(workout)
                 .addOnSuccessListener(documentReference -> {
-                    // Handle success
                     Toast.makeText(this, "Workout saved", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(this, MainActivity.class);
                     startActivity(intent);
-                    finish(); // Go back to the previous activity
+                    finish();
                 })
                 .addOnFailureListener(e -> {
-                    // Handle failure
                     Toast.makeText(this, "Failed to save workout", Toast.LENGTH_SHORT).show();
                 });
     }
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        // This method will be overridden in subclasses
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        // Not used
     }
 }

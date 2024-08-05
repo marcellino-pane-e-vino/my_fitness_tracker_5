@@ -6,6 +6,4 @@ import com.bumptech.glide.module.AppGlideModule;
 
 @GlideModule
 public final class MyAppGlideModule extends AppGlideModule {
-    // Leave this class empty for now
-    // You can override methods if you need to customize Glide's behavior
 }

@@ -8,8 +8,6 @@ import java.text.MessageFormat;
 
 public class RunCounterActivity extends BaseCounterActivity {
 
-    private Sensor stepCounter;
-
     @Override
     protected String getTitleText() {
         return "Run Counter";
@@ -21,7 +19,7 @@ public class RunCounterActivity extends BaseCounterActivity {
         count = 0;
         buttonStart.setEnabled(false);
         buttonStop.setEnabled(true);
-        stepCounter = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
+        Sensor stepCounter = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
         sensorManager.registerListener(this, stepCounter, SensorManager.SENSOR_DELAY_NORMAL);
     }
 

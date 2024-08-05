@@ -8,8 +8,6 @@ import java.text.MessageFormat;
 
 public class PullUpCounterActivity extends BaseCounterActivity {
 
-    private Sensor accelerometer;
-
     // State variables for pullup detection
     private static final float PULL_UP_THRESHOLD = 1.5f;
     private static final int STATE_HANGING = 0;
@@ -27,7 +25,7 @@ public class PullUpCounterActivity extends BaseCounterActivity {
         count = 0;
         buttonStart.setEnabled(false);
         buttonStop.setEnabled(true);
-        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        Sensor accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
     }
 

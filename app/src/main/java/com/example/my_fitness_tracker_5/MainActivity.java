@@ -24,7 +24,6 @@ public class MainActivity extends AppCompatActivity {
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
         FirebaseFirestore.getInstance();
 
-        // Check if the user is logged in
         if (mAuth.getCurrentUser() == null) {
             startActivity(new Intent(MainActivity.this, LoginActivity.class));
             finish();
@@ -57,8 +56,7 @@ public class MainActivity extends AppCompatActivity {
         buttonViewProgress.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, ViewProgressActivity.class)));
         buttonProfile.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, ProfileActivity.class)));
 
-        // Schedule the GoalCheckWorker to run periodically
-        PeriodicWorkRequest goalCheckWorkRequest = new PeriodicWorkRequest.Builder(GoalCheckWorker.class, 24, TimeUnit.HOURS)
+        PeriodicWorkRequest goalCheckWorkRequest = new PeriodicWorkRequest.Builder(GoalCheckWorker.class, 1, TimeUnit.HOURS)
                 .build();
         WorkManager.getInstance(this).enqueue(goalCheckWorkRequest);
     }
