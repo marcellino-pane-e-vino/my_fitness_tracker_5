@@ -44,6 +44,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -204,7 +205,8 @@ public class AddWorkoutActivity extends AppCompatActivity {
                     imageViewPhotoPreview.setImageBitmap(imageBitmap);
                     imageViewPhotoPreview.setVisibility(View.VISIBLE);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Log.e("AddWorkoutActivity", "Error loading image from gallery", e);
+                    Toast.makeText(context, "Error loading image from gallery", Toast.LENGTH_SHORT).show();
                 }
             } else {
                 Log.e("AddWorkoutActivity", "Gallery activity result not OK");
@@ -220,7 +222,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
 
         DatePickerDialog datePickerDialog = new DatePickerDialog(context, (view, year1, month1, dayOfMonth) -> {
             selectedDate = dayOfMonth + "/" + (month1 + 1) + "/" + year1;
-            textViewSelectedDate.setText("Selected Date: " + selectedDate);
+            textViewSelectedDate.setText(MessageFormat.format("Selected Date: {0}", selectedDate));
         }, year, month, day);
         datePickerDialog.show();
     }
@@ -343,6 +345,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
 
     private void setListViewHeightBasedOnChildren(ListView listView) {
         ArrayAdapter adapter = (ArrayAdapter) listView.getAdapter();
+
         if (adapter == null) {
             return;
         }
@@ -364,7 +367,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
         currentPhotoBase64 = null; // Reset the current photo after confirming
         imageViewPhotoPreview.setVisibility(View.GONE); // Hide the photo preview
         editTextDistanceReps.setText(""); // Clear the EditText
-        textViewSelectedDate.setText("No date selected"); // Clear the date text
+        textViewSelectedDate.setText(R.string.selected_date); // Clear the selected date text
         selectedDate = null; // Clear the selected date
     }
 

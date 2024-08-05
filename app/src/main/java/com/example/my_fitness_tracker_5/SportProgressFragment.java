@@ -19,6 +19,7 @@ import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.BarGraphSeries;
 import com.jjoe64.graphview.series.DataPoint;
 
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -137,8 +138,13 @@ public class SportProgressFragment extends Fragment {
                                     if (workoutWeek == currentWeek && workoutYear == currentYear) {
                                         weeklyDistanceReps += distanceReps;
                                         String day = dayFormat.format(workoutDate);
-                                        dailyWorkoutCount.put(day, dailyWorkoutCount.getOrDefault(day, 0) + 1);
-                                        dailyDistanceReps.put(day, dailyDistanceReps.getOrDefault(day, 0.0) + distanceReps);
+                                        Integer countValue = dailyWorkoutCount.get(day);
+                                        int count = (countValue != null) ? countValue : 0;
+                                        dailyWorkoutCount.put(day, count + 1);
+
+                                        Double distanceRepsValue = dailyDistanceReps.get(day);
+                                        double distanceRepsCount = (distanceRepsValue != null) ? distanceRepsValue : 0;
+                                        dailyDistanceReps.put(day, distanceRepsCount + distanceReps);
                                     }
 
                                     if (workoutMonth == currentMonth && workoutYear == currentYear) {
@@ -149,7 +155,7 @@ public class SportProgressFragment extends Fragment {
                                         yearlyDistanceReps += distanceReps;
                                     }
                                 } catch (Exception e) {
-                                    e.printStackTrace();
+                                    Log.e("SportProgressFragment", "Error parsing workout date: ", e);
                                 }
                             }
                         }
@@ -215,10 +221,10 @@ public class SportProgressFragment extends Fragment {
                             }
                         });
 
-                        textTotalSportWorkouts.setText("Total " + sport + " Workouts: " + totalSportWorkouts);
-                        textWeeklySportWorkouts.setText(sport + " Workouts This Week: " + weeklySportWorkouts);
-                        textMonthlySportWorkouts.setText(sport + " Workouts This Month: " + monthlySportWorkouts);
-                        textYearlySportWorkouts.setText(sport + " Workouts This Year: " + yearlySportWorkouts);
+                        textTotalSportWorkouts.setText(MessageFormat.format("Total {0} Workouts: {1}", sport, totalSportWorkouts));
+                        textWeeklySportWorkouts.setText(MessageFormat.format("{0} Workouts This Week: {1}", sport, weeklySportWorkouts));
+                        textMonthlySportWorkouts.setText(MessageFormat.format("{0} Workouts This Month: {1}", sport, monthlySportWorkouts));
+                        textYearlySportWorkouts.setText(MessageFormat.format("{0} Workouts This Year: {1}", sport, yearlySportWorkouts));
 
                         if (!sport.equalsIgnoreCase("General")) {
                             textTotalDistanceReps.setVisibility(View.VISIBLE);
@@ -226,10 +232,11 @@ public class SportProgressFragment extends Fragment {
                             textMonthlyDistanceReps.setVisibility(View.VISIBLE);
                             textYearlyDistanceReps.setVisibility(View.VISIBLE);
 
-                            textTotalDistanceReps.setText("Total " + sport + " Distance/Reps: " + totalDistanceReps);
-                            textWeeklyDistanceReps.setText(sport + " Distance/Reps This Week: " + weeklyDistanceReps);
-                            textMonthlyDistanceReps.setText(sport + " Distance/Reps This Month: " + monthlyDistanceReps);
-                            textYearlyDistanceReps.setText(sport + " Distance/Reps This Year: " + yearlyDistanceReps);
+                            textTotalDistanceReps.setText(MessageFormat.format("Total {0} Distance/Reps: {1}", sport, totalDistanceReps));
+                            textWeeklyDistanceReps.setText(MessageFormat.format("{0} Distance/Reps This Week: {1}", sport, weeklyDistanceReps));
+                            textMonthlyDistanceReps.setText(MessageFormat.format("{0} Distance/Reps This Month: {1}", sport, monthlyDistanceReps));
+                            textYearlyDistanceReps.setText(MessageFormat.format("{0} Distance/Reps This Year: {1}", sport, yearlyDistanceReps));
+
                         } else {
                             textTotalDistanceReps.setVisibility(View.GONE);
                             textWeeklyDistanceReps.setVisibility(View.GONE);
@@ -246,7 +253,8 @@ public class SportProgressFragment extends Fragment {
         DataPoint[] dataPoints = new DataPoint[7];
         for (int i = 1; i <= 7; i++) {
             String day = String.valueOf(i);
-            int count = dailyWorkoutCount.getOrDefault(day, 0);
+            Integer countValue = dailyWorkoutCount.get(day);
+            int count = (countValue != null) ? countValue : 0;
             dataPoints[i - 1] = new DataPoint(i, count);
         }
         return dataPoints;
@@ -256,7 +264,8 @@ public class SportProgressFragment extends Fragment {
         DataPoint[] dataPoints = new DataPoint[7];
         for (int i = 1; i <= 7; i++) {
             String day = String.valueOf(i);
-            double count = dailyDistanceReps.getOrDefault(day, 0.0);
+            Double countValue = dailyDistanceReps.get(day);
+            double count = (countValue != null) ? countValue : 0;
             dataPoints[i - 1] = new DataPoint(i, count);
         }
         return dataPoints;

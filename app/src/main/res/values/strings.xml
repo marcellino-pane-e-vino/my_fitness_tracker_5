@@ -44,6 +44,7 @@
     <string name="delete_goal">Delete Goal</string>
     <string name="workout">Workout</string>
     <string name="delete_workout">Delete Workout</string>
+    <string name="selected_date">Selected Date:</string>
     <string-array name="sports_array">
         <item>Run</item>
         <item>Walk</item>
