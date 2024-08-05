@@ -6,6 +6,7 @@ import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -130,7 +131,8 @@ public class ProfileActivity extends AppCompatActivity {
                 imageViewProfilePicture.setImageBitmap(bitmap);
                 uploadImageToFirebase(bitmap);
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e("ProfileActivity", "Failed to load image", e);
+                Toast.makeText(ProfileActivity.this, "Failed to load image", Toast.LENGTH_SHORT).show();
             }
         } else if (requestCode == CAMERA_REQUEST && resultCode == RESULT_OK && data != null) {
             Bitmap bitmap = (Bitmap) Objects.requireNonNull(data.getExtras()).get("data");
@@ -151,7 +153,7 @@ public class ProfileActivity extends AppCompatActivity {
 
             UploadTask uploadTask = profileImageRef.putBytes(data);
             uploadTask.addOnSuccessListener(taskSnapshot -> profileImageRef.getDownloadUrl().addOnSuccessListener(uri -> saveProfileImageUrlToFirestore(uid, uri.toString()))).addOnFailureListener(e -> {
-                e.printStackTrace(); // Log the error
+                Log.d("ProfileActivity", "Failed to upload image: " + e.getMessage());
                 Toast.makeText(ProfileActivity.this, "Failed to upload image: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             });
         }
@@ -161,7 +163,7 @@ public class ProfileActivity extends AppCompatActivity {
         db.collection("users").document(uid).update("profileImageUrl", url)
                 .addOnSuccessListener(aVoid -> Toast.makeText(ProfileActivity.this, "Profile image updated", Toast.LENGTH_SHORT).show())
                 .addOnFailureListener(e -> {
-                    e.printStackTrace(); // Log the error
+                    Log.d("ProfileActivity", "Failed to update profile image: " + e.getMessage());
                     Toast.makeText(ProfileActivity.this, "Failed to update profile image: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
