@@ -6,6 +6,7 @@ import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Base64;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Button;
@@ -15,11 +16,15 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentManager;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.BitmapImageViewTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -82,6 +87,12 @@ public class ProfileActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        imageViewProfilePicture.setOnClickListener(v -> {
+            if (imageViewProfilePicture.getTag() != null) {
+                showImagePreview((String) imageViewProfilePicture.getTag());
+            }
+        });
+
         imagePickerLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -89,8 +100,10 @@ public class ProfileActivity extends AppCompatActivity {
                         Uri uri = result.getData().getData();
                         try {
                             Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                            String imageBase64 = encodeBase64(bitmap);
                             imageViewProfilePicture.setImageBitmap(bitmap);
-                            uploadImageToFirebase(bitmap);
+                            imageViewProfilePicture.setTag(imageBase64);
+                            uploadImageToFirebase(imageBase64);
                         } catch (IOException e) {
                             Log.e("ProfileActivity", "Failed to load image", e);
                             Toast.makeText(ProfileActivity.this, "Failed to load image", Toast.LENGTH_SHORT).show();
@@ -138,15 +151,13 @@ public class ProfileActivity extends AppCompatActivity {
         imagePickerLauncher.launch(chooser);
     }
 
-    private void uploadImageToFirebase(Bitmap bitmap) {
+    private void uploadImageToFirebase(String imageBase64) {
         FirebaseUser user = mAuth.getCurrentUser();
         if (user != null) {
             String uid = user.getUid();
             StorageReference profileImageRef = storageReference.child("profileImages/" + uid);
 
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-            byte[] data = baos.toByteArray();
+            byte[] data = Base64.decode(imageBase64, Base64.DEFAULT);
 
             UploadTask uploadTask = profileImageRef.putBytes(data);
             uploadTask.addOnSuccessListener(taskSnapshot -> profileImageRef.getDownloadUrl().addOnSuccessListener(uri -> saveProfileImageUrlToFirestore(uid, uri.toString()))).addOnFailureListener(e -> {
@@ -158,7 +169,10 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void saveProfileImageUrlToFirestore(String uid, String url) {
         db.collection("users").document(uid).update("profileImageUrl", url)
-                .addOnSuccessListener(aVoid -> Toast.makeText(ProfileActivity.this, "Profile image updated", Toast.LENGTH_SHORT).show())
+                .addOnSuccessListener(aVoid -> {
+                    loadImageFromUrl(url);
+                    Toast.makeText(ProfileActivity.this, "Profile image updated", Toast.LENGTH_SHORT).show();
+                })
                 .addOnFailureListener(e -> {
                     Log.d("ProfileActivity", "Failed to update profile image: " + e.getMessage());
                     Toast.makeText(ProfileActivity.this, "Failed to update profile image: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -166,6 +180,43 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void loadImageFromUrl(String url) {
-        Glide.with(this).load(url).into(imageViewProfilePicture);
+        Glide.with(this).asBitmap().load(url).into(new BitmapImageViewTarget(imageViewProfilePicture) {
+            @Override
+            protected void setResource(Bitmap resource) {
+                if (resource != null) {
+                    imageViewProfilePicture.setImageBitmap(resource);
+                    String imageBase64 = encodeBase64(resource);
+                    imageViewProfilePicture.setTag(imageBase64);
+                } else {
+                    Log.e("ProfileActivity", "Failed to load image: Bitmap is null");
+                }
+            }
+
+            @Override
+            public void onResourceReady(@NonNull Bitmap resource, Transition<? super Bitmap> transition) {
+                imageViewProfilePicture.setImageBitmap(resource);
+                String imageBase64 = encodeBase64(resource);
+                imageViewProfilePicture.setTag(imageBase64);
+            }
+        });
+    }
+
+    private String encodeBase64(Bitmap image) {
+        if (image == null) {
+            return null;
+        }
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+        byte[] byteArray = byteArrayOutputStream.toByteArray();
+        return Base64.encodeToString(byteArray, Base64.DEFAULT);
+    }
+
+    private void showImagePreview(String imageBase64) {
+        if (imageBase64 != null) {
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            ImagePreviewDialogFragment.newInstance(imageBase64).show(fragmentManager, "image_preview");
+        } else {
+            Toast.makeText(this, "Failed to load image preview", Toast.LENGTH_SHORT).show();
+        }
     }
 }

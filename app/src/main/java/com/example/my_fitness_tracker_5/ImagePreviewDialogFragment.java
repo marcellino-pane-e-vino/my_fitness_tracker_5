@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,15 +35,21 @@ public class ImagePreviewDialogFragment extends DialogFragment {
 
         if (getArguments() != null) {
             String imageBase64 = getArguments().getString(ARG_IMAGE_BASE64);
-            Bitmap bitmap = decodeBase64(imageBase64);
-            imageView.setImageBitmap(bitmap);
+            if (imageBase64 != null && !imageBase64.isEmpty()) {
+                try {
+                    Bitmap bitmap = decodeBase64(imageBase64);
+                    imageView.setImageBitmap(bitmap);
+                } catch (IllegalArgumentException e) {
+                    Log.e("ImagePreviewDialog", "Invalid Base64 string: " + imageBase64);
+                }
+            }
         }
 
         return view;
     }
 
     private Bitmap decodeBase64(String input) {
-        byte[] decodedByte = Base64.decode(input, 0);
+        byte[] decodedByte = Base64.decode(input, Base64.DEFAULT);
         return BitmapFactory.decodeByteArray(decodedByte, 0, decodedByte.length);
     }
 }
