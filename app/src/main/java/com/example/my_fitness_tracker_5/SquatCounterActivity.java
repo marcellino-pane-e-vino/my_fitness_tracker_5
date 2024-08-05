@@ -33,10 +33,20 @@ public class SquatCounterActivity extends AppCompatActivity implements SensorEve
     private Sensor accelerometer;
     private boolean isCounting = false;
     private int squatCount = 0;
-    private float lastY;
 
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
+
+    // State variables for squat detection
+    private static final float SQUAT_THRESHOLD = 1.5f;
+    private static final float NOISE_THRESHOLD = 0.2f;
+    private static final int STATE_STANDING = 0;
+    private static final int STATE_SQUATTING = 1;
+    private int squatState = STATE_STANDING;
+
+    // Low-pass filter constants
+    private static final float ALPHA = 0.8f;
+    private float[] gravity = new float[3];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +86,6 @@ public class SquatCounterActivity extends AppCompatActivity implements SensorEve
     private void startCounting() {
         isCounting = true;
         squatCount = 0;
-        lastY = 0;
         buttonStartSquats.setEnabled(false);
         buttonStopSquats.setEnabled(true);
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
@@ -119,19 +128,30 @@ public class SquatCounterActivity extends AppCompatActivity implements SensorEve
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (isCounting) {
-            float y = event.values[1];
+            float[] linearAcceleration = new float[3];
 
-            if (lastY == 0) {
-                lastY = y;
-                return;
+            // Apply low-pass filter to isolate gravity
+            for (int i = 0; i < 3; i++) {
+                gravity[i] = ALPHA * gravity[i] + (1 - ALPHA) * event.values[i];
+                linearAcceleration[i] = event.values[i] - gravity[i];
             }
 
-            if (y - lastY > 3.5) {
-                squatCount++;
-                textSquatCount.setText(MessageFormat.format("Squats: {0}", squatCount));
-            }
+            float y = linearAcceleration[1]; // Use the Y axis for squat detection
 
-            lastY = y;
+            switch (squatState) {
+                case STATE_STANDING:
+                    if (y < -SQUAT_THRESHOLD) {
+                        squatState = STATE_SQUATTING;
+                    }
+                    break;
+                case STATE_SQUATTING:
+                    if (y > SQUAT_THRESHOLD) {
+                        squatState = STATE_STANDING;
+                        squatCount++;
+                        textSquatCount.setText(MessageFormat.format("Squats: {0}", squatCount));
+                    }
+                    break;
+            }
         }
     }
 
