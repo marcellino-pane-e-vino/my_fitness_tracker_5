@@ -3,6 +3,9 @@ package com.example.my_fitness_tracker_5;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorManager;
+import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 
 import java.text.MessageFormat;
 
@@ -14,15 +17,36 @@ public class PullUpCounterActivity extends BaseCounterActivity {
     private static final int STATE_PULLING_UP = 1;
     private int pullUpState = STATE_HANGING;
 
+    // Keys for saving instance state
+    private static final String KEY_COUNT = "count";
+    private static final String KEY_PULL_UP_STATE = "pullUpState";
+    private static final String KEY_IS_COUNTING = "isCounting";
+
     @Override
     protected String getTitleText() {
         return "Pullup Counter";
     }
 
     @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // Restore saved state if available
+        if (savedInstanceState != null) {
+            count = savedInstanceState.getInt(KEY_COUNT, 0);
+            pullUpState = savedInstanceState.getInt(KEY_PULL_UP_STATE, STATE_HANGING);
+            isCounting = savedInstanceState.getBoolean(KEY_IS_COUNTING, false);
+            textCount.setText(MessageFormat.format("Pullups: {0}", count));
+
+            if (isCounting) {
+                startCounting();
+            }
+        }
+    }
+
+    @Override
     protected void startCounting() {
         isCounting = true;
-        count = 0;
         buttonStart.setEnabled(false);
         buttonStop.setEnabled(true);
         Sensor accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -64,10 +88,31 @@ public class PullUpCounterActivity extends BaseCounterActivity {
                     if (y > PULL_UP_THRESHOLD) {
                         pullUpState = STATE_HANGING;
                         count++;
-                        textCount.setText(MessageFormat.format("pullups: {0}", count));
+                        textCount.setText(MessageFormat.format("Pullups: {0}", count));
                     }
                     break;
             }
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(KEY_COUNT, count);
+        outState.putInt(KEY_PULL_UP_STATE, pullUpState);
+        outState.putBoolean(KEY_IS_COUNTING, isCounting);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        count = savedInstanceState.getInt(KEY_COUNT, 0);
+        pullUpState = savedInstanceState.getInt(KEY_PULL_UP_STATE, STATE_HANGING);
+        isCounting = savedInstanceState.getBoolean(KEY_IS_COUNTING, false);
+        textCount.setText(MessageFormat.format("Pullups: {0}", count));
+
+        if (isCounting) {
+            startCounting();
         }
     }
 }
