@@ -131,14 +131,22 @@ public class SportProgressFragment extends Fragment {
                                         yearlySportWorkouts++;
                                     }
 
+                                    double distanceReps = Double.parseDouble(workout.getDistanceReps());
+                                    totalDistanceReps += distanceReps;
+
                                     if (workoutWeek == currentWeek && workoutYear == currentYear) {
+                                        weeklyDistanceReps += distanceReps;
                                         String day = dayFormat.format(workoutDate);
                                         dailyWorkoutCount.put(day, dailyWorkoutCount.getOrDefault(day, 0) + 1);
-
-                                        double distanceReps = Double.parseDouble(workout.getDistanceReps());
-                                        totalDistanceReps += distanceReps;
-                                        weeklyDistanceReps += distanceReps;
                                         dailyDistanceReps.put(day, dailyDistanceReps.getOrDefault(day, 0.0) + distanceReps);
+                                    }
+
+                                    if (workoutMonth == currentMonth && workoutYear == currentYear) {
+                                        monthlyDistanceReps += distanceReps;
+                                    }
+
+                                    if (workoutYear == currentYear) {
+                                        yearlyDistanceReps += distanceReps;
                                     }
                                 } catch (Exception e) {
                                     e.printStackTrace();
