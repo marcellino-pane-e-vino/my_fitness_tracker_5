@@ -71,7 +71,6 @@ public class SportProgressFragment extends Fragment {
         TextView textMonthlyDistanceReps = view.findViewById(R.id.text_monthly_distance_reps);
         TextView textYearlyDistanceReps = view.findViewById(R.id.text_yearly_distance_reps);
 
-        // Fetch data from Firestore and display it
         fetchWorkoutDataAndDisplay(graphSportWorkouts, graphDistanceReps, textTotalSportWorkouts, textWeeklySportWorkouts, textMonthlySportWorkouts, textYearlySportWorkouts,
                 textTotalDistanceReps, textWeeklyDistanceReps, textMonthlyDistanceReps, textYearlyDistanceReps);
 
@@ -132,21 +131,15 @@ public class SportProgressFragment extends Fragment {
                                         yearlySportWorkouts++;
                                     }
 
-                                    String day = dayFormat.format(workoutDate);
-                                    dailyWorkoutCount.put(day, dailyWorkoutCount.getOrDefault(day, 0) + 1);
-
-                                    double distanceReps = Double.parseDouble(workout.getDistanceReps());
-                                    totalDistanceReps += distanceReps;
                                     if (workoutWeek == currentWeek && workoutYear == currentYear) {
+                                        String day = dayFormat.format(workoutDate);
+                                        dailyWorkoutCount.put(day, dailyWorkoutCount.getOrDefault(day, 0) + 1);
+
+                                        double distanceReps = Double.parseDouble(workout.getDistanceReps());
+                                        totalDistanceReps += distanceReps;
                                         weeklyDistanceReps += distanceReps;
+                                        dailyDistanceReps.put(day, dailyDistanceReps.getOrDefault(day, 0.0) + distanceReps);
                                     }
-                                    if (workoutMonth == currentMonth && workoutYear == currentYear) {
-                                        monthlyDistanceReps += distanceReps;
-                                    }
-                                    if (workoutYear == currentYear) {
-                                        yearlyDistanceReps += distanceReps;
-                                    }
-                                    dailyDistanceReps.put(day, dailyDistanceReps.getOrDefault(day, 0.0) + distanceReps);
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }
