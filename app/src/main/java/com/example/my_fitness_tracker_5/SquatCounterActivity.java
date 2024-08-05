@@ -99,7 +99,7 @@ public class SquatCounterActivity extends AppCompatActivity implements SensorEve
         String description = "Squat workout";
         String photoBase64 = ""; // Add logic to capture or attach a photo if needed
 
-        Workout workout = new Workout(uid, "Squats", String.valueOf(squatCount), date, description, photoBase64);
+        Workout workout = new Workout(uid, "Squat", String.valueOf(squatCount), date, description, photoBase64);
 
         db.collection("users").document(uid).collection("workouts").add(workout)
                 .addOnSuccessListener(documentReference -> {
