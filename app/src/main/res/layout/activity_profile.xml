@@ -16,49 +16,53 @@
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         app:titleTextColor="@android:color/white" />
 
-    <ImageView
-        android:id="@+id/imageViewProfilePicture"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_below="@id/toolbar"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="16dp"
-        android:contentDescription="@string/profile_picture"
-        android:src="@drawable/ic_android_black_24dp" />
-
-    <Button
-        android:id="@+id/buttonChangePicture"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/imageViewProfilePicture"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="8dp"
-        android:text="@string/change_picture" />
-
-    <TextView
-        android:id="@+id/textViewEmail"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/buttonChangePicture"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="16dp"
-        android:textSize="18sp" />
-
-    <Button
-        android:id="@+id/buttonChangePassword"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/textViewEmail"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="16dp"
-        android:text="@string/change_password" />
-
-    <Button
-        android:id="@+id/buttonLogout"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/buttonChangePassword"
-        android:layout_centerHorizontal="true"
-        android:layout_margin="16dp"
-        android:text="@string/logout" />
+        android:layout_height="match_parent"
+        android:layout_below="@id/toolbar"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ImageView
+                android:id="@+id/imageViewProfilePicture"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:contentDescription="@string/profile_picture"
+                android:src="@drawable/ic_android_black_24dp"
+                android:layout_marginTop="16dp" />
+
+            <Button
+                android:id="@+id/buttonChangePicture"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/change_picture"
+                android:layout_marginTop="8dp" />
+
+            <TextView
+                android:id="@+id/textViewEmail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:layout_marginTop="16dp" />
+
+            <Button
+                android:id="@+id/buttonChangePassword"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/change_password"
+                android:layout_marginTop="16dp" />
+
+            <Button
+                android:id="@+id/buttonLogout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/logout"
+                android:layout_marginTop="16dp" />
+        </LinearLayout>
+    </ScrollView>
 </RelativeLayout>
