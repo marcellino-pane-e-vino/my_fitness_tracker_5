@@ -13,7 +13,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
@@ -33,14 +34,13 @@ import java.util.Objects;
 
 public class ProfileActivity extends AppCompatActivity {
 
-    private static final int PICK_IMAGE_REQUEST = 1;
-    private static final int CAMERA_REQUEST = 2;
-
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
     private StorageReference storageReference;
     private ImageView imageViewProfilePicture;
     private TextView textViewEmail;
+
+    private ActivityResultLauncher<Intent> imagePickerLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +81,23 @@ public class ProfileActivity extends AppCompatActivity {
             Intent intent = new Intent(ProfileActivity.this, ChangePasswordActivity.class);
             startActivity(intent);
         });
+
+        imagePickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null && result.getData().getData() != null) {
+                        Uri uri = result.getData().getData();
+                        try {
+                            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                            imageViewProfilePicture.setImageBitmap(bitmap);
+                            uploadImageToFirebase(bitmap);
+                        } catch (IOException e) {
+                            Log.e("ProfileActivity", "Failed to load image", e);
+                            Toast.makeText(ProfileActivity.this, "Failed to load image", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+        );
     }
 
     @Override
@@ -117,28 +134,8 @@ public class ProfileActivity extends AppCompatActivity {
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            Uri uri = data.getData();
-            try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                imageViewProfilePicture.setImageBitmap(bitmap);
-                uploadImageToFirebase(bitmap);
-            } catch (IOException e) {
-                Log.e("ProfileActivity", "Failed to load image", e);
-                Toast.makeText(ProfileActivity.this, "Failed to load image", Toast.LENGTH_SHORT).show();
-            }
-        } else if (requestCode == CAMERA_REQUEST && resultCode == RESULT_OK && data != null) {
-            Bitmap bitmap = (Bitmap) Objects.requireNonNull(data.getExtras()).get("data");
-            imageViewProfilePicture.setImageBitmap(bitmap);
-            uploadImageToFirebase(bitmap);
-        }
+        Intent chooser = Intent.createChooser(intent, "Select Picture");
+        imagePickerLauncher.launch(chooser);
     }
 
     private void uploadImageToFirebase(Bitmap bitmap) {
