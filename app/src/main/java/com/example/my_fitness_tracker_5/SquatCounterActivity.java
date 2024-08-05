@@ -39,14 +39,13 @@ public class SquatCounterActivity extends AppCompatActivity implements SensorEve
 
     // State variables for squat detection
     private static final float SQUAT_THRESHOLD = 1.5f;
-    private static final float NOISE_THRESHOLD = 0.2f;
     private static final int STATE_STANDING = 0;
     private static final int STATE_SQUATTING = 1;
     private int squatState = STATE_STANDING;
 
     // Low-pass filter constants
     private static final float ALPHA = 0.8f;
-    private float[] gravity = new float[3];
+    private final float[] gravity = new float[3];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
